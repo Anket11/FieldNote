@@ -1,18 +1,23 @@
-import type { Evidence, EvidenceKind } from "@/types/research";
-import CitationList from "@/components/shared/citations/CitationList";
-import ReviewStatus from "@/components/shared/review-status/ReviewStatus";
-const kindLabels: Record<EvidenceKind, string> = {
-  finding: "Finding", requirement: "Historical requirement", reported_problem: "Reported problem",
-  source_lesson: "Source-stated lesson", planning_implication: "Planning implication", gap: "Evidence gap",
-};
-export default function EvidenceItem({ item, selected, onSelect }: { item: Evidence; selected?: boolean; onSelect?: (id: string) => void }) {
-  return <article className="space-y-2 border-b py-4">
-    <p>{kindLabels[item.kind]} · {item.level}-level · <ReviewStatus status={item.reviewStatus} /></p>
-    <h3>{item.title}</h3>
-    <p>{item.text}</p>
-    {item.projectId && <p>Project: {item.projectId}</p>}
-    {item.kind === "gap" && <p>Not confirmed in reviewed evidence; this does not establish absence elsewhere.</p>}
-    {onSelect && <label className="block"><input type="checkbox" checked={selected ?? false} onChange={() => onSelect(item.id)} /> Include {item.title} in draft-review checklist</label>}
-    <CitationList citationIds={item.citationIds} />
-  </article>;
+import type { Evidence } from "@/types/research";
+import EvidenceDetails from "../evidence-details/EvidenceDetails";
+import CitationList from "../citations/CitationList";
+
+interface Props {
+  item: Evidence;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
+}
+export default function EvidenceItem({ item, selected, onSelect }: Props) {
+  return (
+    <article className="space-y-2 py-3">
+      <details>
+        <summary>{item.title}{item.label ? ` · ${item.label}` : ""}</summary>
+        <EvidenceDetails item={item} />
+      </details>
+      <div className="flex flex-wrap gap-3">
+        <CitationList item={item} />
+        {onSelect && <button type="button" aria-label={`${selected ? "Remove" : "Add"} ${item.title} ${selected ? "from" : "to"} review`} onClick={() => onSelect(item.id)}>{selected ? "Remove from review" : "Add to review"}</button>}
+      </div>
+    </article>
+  );
 }

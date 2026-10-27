@@ -1,37 +1,71 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import evidence from "../../demo-data/evidence.json";
-import { buildDemoResult, DEMO_QUERY, mapReviewStatus, searchResearch } from "../services/research";
+import sample from "../../demo-data/procurement_final.json";
+import { adaptResearchResponse, buildDemoResult, DEMO_QUERY, searchResearch } from "../services/research";
 
-test("adapter preserves quotes, levels, claim review states and every grouped award", () => {
+test("adapter uses only the new response, preserving every item, excerpt and source project", () => {
+  const before = JSON.stringify(sample);
   const result = buildDemoResult();
-  assert.equal(result.packages.length, 34);
-  assert.equal(result.packages.reduce((sum, item) => sum + item.awardHistory.length, 0), 36);
-  assert.equal(result.items.filter((item) => item.kind === "gap").length, 12);
-  for (const raw of evidence) {
-    const citation = result.citationsById[raw.evidence_id];
-    assert.equal(citation.quote, raw.evidence_quote);
-    assert.equal(citation.page, raw.source_page ?? undefined);
-    assert.equal(citation.sourceUrl, raw.source_url);
-    assert.equal(citation.reviewStatus, mapReviewStatus(raw.review_status));
+  assert.equal(result.title, sample.title);
+  assert.equal(result.sections.length, 7);
+  assert.equal(Object.keys(result.citationsById).length, 24);
+  assert.deepEqual(result.sections.map((section) => section.items.length), [4, 6, 3, 4, 4, 5, 2]);
+  for (const project of sample.citations.projects) {
+    for (const section of project.sections) {
+      for (const raw of section.passages) {
+        const citation = result.citationsById[raw.id];
+        assert.equal(citation.text, raw.text);
+        assert.deepEqual(citation.mentions, raw.mentions);
+        assert.equal(citation.projectId, project.id);
+        assert.equal(citation.projectTitle, project.title);
+        assert.equal(citation.sourceUrl, "source_url" in raw ? raw.source_url : undefined);
+        assert.equal(citation.bronzePath, raw.bronze_path);
+        assert.equal("reviewStatus" in citation, false);
+        assert.equal("page" in citation, false);
+      }
+    }
   }
-  assert.equal(result.items.filter((item) => item.reviewStatus === "source_checked").length, 20);
-  assert.equal(mapReviewStatus("unknown"), "needs_review");
-  assert.equal(mapReviewStatus("conflicting"), "conflicting");
-  assert.equal(mapReviewStatus("not_confirmed"), "not_confirmed");
-  for (const item of result.items.filter((item) => item.kind === "reported_problem")) {
-    assert.equal(item.level, "project"); assert.equal(item.packageId, undefined);
+  const rawSections = [{ id: "overview", ...sample.overview }, ...sample.sections];
+  for (const rawSection of rawSections) {
+    const section = result.sections.find((section) => section.id === rawSection.id)!;
+    for (const raw of rawSection.items) {
+      const item = section.items.find((item) => item.id === raw.id)!;
+      assert.equal(item.text, raw.text);
+      assert.deepEqual(item.citationIds, raw.citation_ids);
+      for (const id of item.citationIds) assert.ok(result.citationsById[id]);
+    }
   }
-  for (const item of [...result.items, ...result.packages]) {
-    for (const id of item.citationIds) assert.ok(result.citationsById[id]);
-  }
-  const nag = result.packages.find((item) => item.id === "P127974:1763281")!;
-  assert.equal(nag.reviewStatus, "needs_review");
-  assert.equal(nag.awardHistory[0].currency, null);
-  assert.equal(nag.awardHistory[0].amount, "8351513.99");
-  assert.equal(result.citationsById["reviewed:award_price"].quote, "Signed Contract price\nINR 693401152.00");
+  result.sections[1].items[0].differences.push("local change");
+  result.citationsById["cite_6def679435c47bf2"].mentions.push("local change");
+  assert.equal(JSON.stringify(sample), before);
 });
-test("search accepts only the saved scenario, preserving honest empty and invalid states", async () => {
+
+test("adapter handles empty/new sections and missing optional provenance without manufacturing evidence", () => {
+  const response = {
+    title: "New report", overview: { title: "Summary", items: [] },
+    sections: [{ id: "new_section", title: "New section", items: [{ id: "one", title: "Question", text: "Check the scope", citation_ids: ["source", "missing", "toString"] }] }],
+    citations: { title: "Sources", projects: [{ id: "project", title: "Project", sections: [{ id: "context", title: "Context", passages: [{ id: "source", title: "Passage", text: "Exact source", mentions: [], source_url: "javascript:alert(1)" }] }] }] },
+  };
+  const result = adaptResearchResponse(response);
+  assert.deepEqual(result.sections.map((section) => section.id), ["overview", "new_section"]);
+  assert.deepEqual(result.sections[1].items[0].unknowns, []);
+  assert.deepEqual(result.sections[1].items[0].projectIds, ["project"]);
+  assert.equal(result.citationsById.source.sourceUrl, undefined);
+  assert.equal(result.citationsById.source.sourceFile, undefined);
+  assert.equal(result.citationsById.missing, undefined);
+});
+
+test("malformed responses and duplicate citation IDs produce a useful error", () => {
+  assert.throws(() => adaptResearchResponse({}), /Invalid research response/);
+  const wrongList = structuredClone(sample);
+  Object.assign(wrongList.overview.items[0], { citation_ids: "not a list" });
+  assert.throws(() => adaptResearchResponse(wrongList), /list of text/);
+  const duplicate = structuredClone(sample);
+  duplicate.citations.projects[0].sections[0].passages.push(duplicate.citations.projects[0].sections[0].passages[0]);
+  assert.throws(() => adaptResearchResponse(duplicate), /duplicate ID/);
+});
+
+test("mock search serves only the supplied scenario and rejects blank input", async () => {
   assert.ok(await searchResearch(`  ${DEMO_QUERY.toUpperCase().replaceAll(" ", "  ")}  `));
   assert.equal(await searchResearch("a different substation"), null);
   await assert.rejects(searchResearch("  "), /Describe your procurement/);

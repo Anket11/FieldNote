@@ -1,28 +1,72 @@
-export type ReviewState = "source_checked" | "needs_review" | "not_confirmed" | "conflicting";
-export type EvidenceKind = "finding" | "requirement" | "reported_problem" | "source_lesson" | "planning_implication" | "gap";
-export type Tab = "overview" | "packages" | "requirements" | "risks";
-export type Level = "package" | "project" | "general";
+/** The sectioned response supplied by the backend. */
+export interface BackendItem {
+  id: string;
+  title: string;
+  text: string;
+  relevance?: string;
+  differences?: string[];
+  unknowns?: string[];
+  citation_ids: string[];
+  label?: string;
+}
+export interface BackendSection {
+  id: string;
+  title: string;
+  items: BackendItem[];
+}
+export interface BackendPassage {
+  id: string;
+  title: string;
+  text: string;
+  mentions: string[];
+  bronze_path?: string;
+  source_url?: string;
+}
+export interface BackendResponse {
+  title: string;
+  overview: { title: string; items: BackendItem[] };
+  sections: BackendSection[];
+  citations: {
+    title: string;
+    projects: {
+      id: string;
+      title: string;
+      sections: { id: string; title: string; passages: BackendPassage[] }[];
+    }[];
+  };
+}
 export interface Citation {
-  id: string; sourceId?: string; title: string; quote: string;
-  reviewStatus: ReviewState; level: Level; sourceLevel: string;
-  projectId?: string; packageId?: string; page?: number;
-  recordLocator?: string; passageId?: string; sourceUrl?: string; limitation: string;
+  id: string;
+  title: string;
+  text: string;
+  mentions: string[];
+  projectId: string;
+  projectTitle: string;
+  sectionTitle: string;
+  sourceFile?: string;
+  bronzePath?: string;
+  sourceUrl?: string;
 }
 export interface Evidence {
-  id: string; kind: EvidenceKind; title: string; text: string;
-  level: Level; projectId?: string; packageId?: string;
-  reviewStatus: ReviewState; citationIds: string[]; tab: Tab;
+  kind: "package" | "finding";
+  id: string;
+  title: string;
+  text: string;
+  relevance?: string;
+  differences: string[];
+  unknowns: string[];
+  label?: string;
+  citationIds: string[];
+  projectIds: string[];
 }
-export interface AwardRecord {
-  id: string; reference: string; description: string; signedDate: string;
-  suppliers: string[]; amount: string; currency: string | null; citationId: string;
-}
-export interface Package {
-  id: string; reference: string; projectId: string; location?: string; scope: string;
-  matchReasons: string[]; differences: string[]; citationIds: string[];
-  reviewStatus: ReviewState; grouping: string; awardHistory: AwardRecord[];
+export interface ResearchSection {
+  id: string;
+  title: string;
+  items: Evidence[];
 }
 export interface ResearchResult {
-  items: Evidence[]; packages: Package[]; citationsById: Record<string, Citation>;
-  coverage: string;
+  title: string;
+  sections: ResearchSection[];
+  citationsById: Record<string, Citation>;
+  projects: { id: string; title: string }[];
 }
