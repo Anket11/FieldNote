@@ -9,13 +9,15 @@ interface Props {
   onClose: () => void;
 }
 export default function EvidencePanel({ citation, title, citations, onCitationChange, onClose }: Props) {
+  const panel = useRef<HTMLElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
+    panel.current?.scrollTo(0, 0);
     heading.current?.focus({ preventScroll: true });
     if (!window.matchMedia("(min-width: 64rem)").matches) window.scrollTo(0, 0);
-  }, []);
+  }, [citation.id]);
   return (
-    <aside id="source-evidence" aria-label="Source evidence" className="min-w-0 space-y-3 break-words p-4 lg:w-96 lg:shrink-0">
+    <aside ref={panel} id="source-evidence" aria-label="Source evidence" className="min-w-0 space-y-3 break-words p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:w-96 lg:shrink-0 lg:overflow-y-auto">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 ref={heading} tabIndex={-1}>Source evidence</h2>
         <button type="button" onClick={onClose}><span className="lg:hidden">Back to finding</span><span className="hidden lg:inline">Close evidence</span></button>
