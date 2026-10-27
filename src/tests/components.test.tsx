@@ -25,13 +25,19 @@ test("three work areas compose compact research, preparation and a removable rev
   assert.equal((html.match(/role="tab"/g) ?? []).length, 3);
   assert.equal((html.match(/aria-selected="true"/g) ?? []).length, 1);
   assert.match(html, /My review \(3\)/);
-  assert.match(html, /Research brief/);
+  assert.match(html, /Research overview/);
+  for (const [title, count] of [["Similar packages", 5], ["Historical awards", 2], ["Risks &amp; lessons", 4], ["Requirements to consider", 4], ["Action items", 5], ["Packaging and bidding examples", 3]]) {
+    assert.ok(html.includes(`${title}</button></td><td>${count}</td>`));
+  }
+  assert.match(html, /id="research-readiness_checklist" tabindex="-1"/);
+  assert.match(html, /id="research-historical_awards" tabindex="-1"/);
+  assert.doesNotMatch(html, /Questions to resolve|Open preparation questions|Research brief/);
   assert.match(html, /<table/);
   assert.match(html, /Main difference/);
   assert.match(html, /Packaging and bidding examples/);
   assert.match(html, /Historical awards/);
   assert.match(html, /Requirements to consider/);
-  assert.match(html, /Questions to resolve/);
+  assert.match(html, /Action items/);
   assert.match(html, /Tentative/);
   assert.match(html, /View evidence · 2 sources/);
   assert.doesNotMatch(html, /Selected packages|Selected review items|Backend relevance|Saved sample/);

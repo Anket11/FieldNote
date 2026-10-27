@@ -8,7 +8,7 @@ export default function PrepareTenderArea({ sections }: { sections: ResearchSect
   const selectedIds = useAppSelector((state) => state.research.selectedIds);
   return (
     <div className="space-y-6">
-      {[{ id: "tender_requirements", title: "Requirements to consider" }, { id: "readiness_checklist", title: "Questions to resolve" }].map((group) => {
+      {[{ id: "tender_requirements", title: "Requirements to consider" }, { id: "readiness_checklist", title: "Action items" }].map((group) => {
         const items = sections.find((section) => section.id === group.id)?.items ?? [];
         return <section key={group.id}>
           <h3 id={`research-${group.id}`} tabIndex={-1}>{group.title}</h3>
