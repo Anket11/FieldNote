@@ -1,6 +1,6 @@
-# Procurement intelligence demo
+# Procurement research skeleton
 
-A plain functional frontend skeleton for procurement research, running entirely on saved local evidence. All interactions stay at `/`.
+A single-page Next.js/React app for reviewing procurement research with its source evidence. Native controls and minimal Tailwind layout utilities only; no custom visual CSS or UI library.
 
 ## Run
 
@@ -11,73 +11,69 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000, choose **Use demo query**, then **Search**. The saved scenario is a 132 kV substation and connecting transmission line in hilly terrain, considering turnkey procurement. Only case and whitespace variations of this query are supported. Other queries show an empty state. Nothing is sent to a remote service.
+Open http://localhost:3000, choose **Use example query**, then **Search**. The mock currently serves the saved 132 kV substation / connecting-line scenario from `demo-data/query.json`. Only case and whitespace variations of that query are supported; other queries show an empty state. No backend endpoint was supplied, so no live request is made.
 
-## Included
+## Active data contract
 
-- Editable search, validation, loading, error and unsupported-query states.
-- Overview, similar packages, tender requirements, and risks/lessons tabs. Arrow keys, Home and End operate the tabs.
-- Project and candidate review-state filters, package selection, and all grouped award histories. Selected packages use the same component as candidates.
-- Selectable historical evidence for a draft-review checklist, without tender document generation.
-- A shared source panel with exact quotation, available locators, claim-level review status, evidence context, limitations and original URL when supplied. Closing it preserves filters, tab and selections.
-- Native controls and layout-only Tailwind utilities. No custom visual theme or design system.
+The current source is **`demo-data/procurement_final.json`**. It supersedes the older frontend fixtures; the app does not merge the old evidence, awards, gaps or coverage records into this response. All supplied JSON files remain unchanged.
 
-## Data and evidence limits
+The response contains:
 
-`demo-data/` is supplied, unchanged source material; see [its README](demo-data/README.md). The adapter uses all 40 selected evidence items, 34 candidate comparison groups with 36 award histories, 12 gaps and the partial-cache coverage record. Only 20 selected claims are source checked. Package candidates remain labelled Needs review even when some attached claims are checked.
+- A report title and overview (4 items).
+- Similar packages (6 entries: 5 package candidates and 1 related finding).
+- Procurement strategy (3 items).
+- Tender requirements (4 items).
+- Risks and lessons (4 items).
+- Readiness checklist (5 tentative items).
+- Historical awards (2 summaries).
+- 24 passages grouped by 3 source projects, with passage text, supporting excerpts (`mentions`), internal source paths and 3 original URLs.
 
-The 1044 cached fact candidates do not represent an exhaustive search of 36022 Silver facts. Original/leftover-work groups preserve separate records and provisional-link warnings. Project findings stay at project level. Planning implications are explicitly labelled interpretations; the supplied selection has no explicit source-stated lesson items.
+The interface has three work areas:
 
-NAG-SS-02A's published notice price (INR 693401152) stays separate from the differently sized award-feed amount, whose currency is unverified. The 15-month historical duration starts from an unconfirmed effective date. Actual completion and final paid cost are unconfirmed. Historical qualification thresholds require review before reuse.
+- **Research:** a clickable overview of result counts, expandable key findings, a filterable package table with expandable rows, and packaging, risk and historical-award examples. Additional response sections appear here using the common evidence list.
+- **Prepare tender:** expandable requirements and action items with Add to review actions.
+- **My review:** selected package examples, requirements and action items, grouped with source actions and Remove controls.
 
-## Folder and component map
+After searching, the query becomes a compact header with Edit search. The three work areas stay mounted so inline expansion and selection state survive navigation. Empty groups have a short empty state. Similar-package selection is available for the explicit `package:` records. The source-project filter derives context from attached citations, not verified package metadata. Tender and readiness items can be selected independently for review, without approving a requirement or marking readiness work complete.
 
-- `src/app/`: normal App Router root layout, single page and minimal Tailwind imports. Tailwind preflight is omitted to retain native control appearance.
-Components shared across features live in `shared/`. Feature-specific children live under their parent feature, with local imports. Shared components do not import feature components. No forwarding files or barrel exports are needed.
+`src/types/research.ts` describes both the backend response and the UI contracts. `adaptResearchResponse(unknown)` validates the response shape and IDs, copies item data, normalizes the project-grouped passages into a citation map, and retains exact source text and excerpts. Missing citations render as unavailable. Unsupported source URL schemes are omitted. Replace the mock body of `searchResearch` with a request passed through this adapter when the endpoint and request contract are available.
+
+## Evidence limits
+
+Summaries, relevance assessments, differences and tentative labels come from the backend. They are displayed separately from the source passages and are not presented as independently checked claims. Some sample assessments make terrain or scope inferences, use unrelated IT/metering examples, or interpret historical technical clauses. Users must inspect the source and review applicability before reuse.
+
+The new response supplies no review statuses, source page numbers, verified package-level classifications, retrieval coverage, or structured award histories. The UI does not manufacture those fields or carry forward the old fixture's source-checked labels and counts. Historical award summaries remain separate from package candidates; opening/evaluated/signed prices, dates, durations, actual completion and final paid costs must not be conflated.
+
+The shared evidence panel shows exact supplied excerpts and expandable full passage text, the source project context, the source filename/path when supplied, and an original-source link when available. Embedded JSON or HTML in passages is rendered as escaped text. Internal paths appear in collapsed provenance details, not as fabricated public links. A short View evidence action opens all sources for that finding, with a source selector when there are several. On desktop, evidence appears alongside the workspace; on mobile it is a dedicated view with Back to finding. Closing it restores the visible originating control and scroll position. The active work area, project filter and selections are preserved.
+
+## Component ownership
 
 ```text
 src/components/
   shared/
-    citations/
-      CitationButton.tsx
-      CitationList.tsx
-    evidence-list/
-      EvidenceList.tsx
-      EvidenceItem.tsx
-    review-status/
-      ReviewStatus.tsx
+    citations/                 # compact evidence trigger and return focus/scroll
+    evidence-details/          # summary, relevance, differences and unknowns
+    evidence-list/             # expandable evidence items and lists
   research/
     ResearchWorkspace.tsx
-    search/
-      SearchWorkspace.tsx
-      SearchForm.tsx
+    search/                    # compact query / editable SearchForm
     results/
       ResultsWorkspace.tsx
       ResearchTabs.tsx
-      EvidencePanel.tsx
-      overview/
-        OverviewSection.tsx
-      similar-packages/
-        SimilarPackagesSection.tsx
-        PackageFilters.tsx
-        package-list/
-          PackageList.tsx
-          package-card/
-            PackageCard.tsx
-            AwardHistory.tsx
-      tender-requirements/
-        RequirementsSection.tsx
-        ReviewChecklist.tsx
-      risks-and-lessons/
-        RisksSection.tsx
+      evidence-panel/          # excerpts, passage selection and full source text
+      research/
+        ResearchArea.tsx
+        research-overview/ResearchOverview.tsx
+        similar-packages/
+          SimilarPackagesSection.tsx
+          package-table/
+            PackageTable.tsx
+            PackageRow.tsx
+      prepare-tender/PrepareTenderArea.tsx
+      my-review/MyReviewArea.tsx
 ```
 
-Search and results own their workspace state connections. Each result feature composes small components; reusable evidence/citation components work across those features. Raw data adaptation stays in the service layer.
-
-- `src/services/research.ts`: saved-query matching and immutable JSON-to-UI adaptation, review labels and citation map. Replace `searchResearch` with a real service returning the same typed result to change data sources.
-- `src/types/research.ts`: explicit UI/domain contracts.
-- `src/store/`: one Redux slice, derived selectors, typed hooks, and a separate store per mounted Provider. No persistence or server-side shared mutable store.
-- `src/tests/`: Node tests for quotation/status mapping, supported queries, grouping counts, selection/evidence state transitions and composed feature rendering.
+Components share explicit UI types and do not parse raw JSON. Feature-specific children stay with their parent; shared evidence and citation components are reused across features. The service adapts data, and a single Redux slice owns search state, active work area, filter, one list of review selections and active evidence IDs. Derived package lists use selectors. Each mounted Provider creates its own store; there is no persistence or shared mutable server store.
 
 ## Checks
 
@@ -85,13 +81,9 @@ Search and results own their workspace state connections. Each result feature co
 npm run typecheck
 npm test
 npm run lint
-npm run build
+npm run build -- --webpack
 ```
 
-Type checking, all four tests, lint and the production build with `npm run build -- --webpack` pass. The default Turbopack build cannot bind its internal worker port in the restricted sandbox; webpack verifies the production app without that restriction. Browser interaction checks have not been run.
+Tests cover exact source mapping, response validation, optional/missing evidence, three work areas, grouped sources, escaped source records, unsupported queries, filtering and selection preservation. Webpack is used for local production verification because the default Turbopack worker cannot bind its internal port in this sandbox.
 
-The UI uses small focused React components within one app, with one Redux store. These are component boundaries, not separately deployed microfrontends.
-
-## Still mocked / deferred
-
-The service returns saved results for one scenario. There is no live retrieval, backend, authentication, LLM, database, supplier scoring, cost prediction, completion forecast, monitoring, document generation, or deployment. Selections are in memory and reset after a successful new search. Visual polish is deliberately deferred.
+Live retrieval, backend integration, supplier ranking, price/completion prediction, document generation, deployment and visual polish remain outside this skeleton.
