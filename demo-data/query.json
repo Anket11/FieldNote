@@ -1,0 +1,15 @@
+{
+  "id": "132kv-turnkey-demo",
+  "query": "We need a 132 kV substation and connecting transmission line in hilly terrain. We are considering turnkey procurement.",
+  "mode": "saved_demo",
+  "requested_scope": {
+    "voltage_kv": 132,
+    "assets": [
+      "substation",
+      "transmission_line"
+    ],
+    "terrain": "hilly",
+    "contract_approach": "turnkey"
+  },
+  "important": "Requested attributes are user intent, not verified attributes of every comparison."
+}
