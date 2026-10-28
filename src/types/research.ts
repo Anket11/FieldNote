@@ -15,12 +15,12 @@ export interface BackendItem {
   label?: string;
   location?: PackageLocation;
 }
-export interface BackendSection {
+interface BackendSection {
   id: string;
   title: string;
   items: BackendItem[];
 }
-export interface BackendPassage {
+interface BackendPassage {
   id: string;
   title: string;
   text: string;
@@ -66,7 +66,7 @@ export interface Evidence {
   citationIds: string[];
   projectIds: string[];
 }
-export interface ResearchSection {
+interface ResearchSection {
   id: string;
   title: string;
   items: Evidence[];

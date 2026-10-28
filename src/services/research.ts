@@ -1,9 +1,5 @@
-import scenario from "../../demo-data/query.json";
 import sample from "../../demo-data/procurement_final.json";
 import type { BackendItem, BackendResponse, Citation, Evidence, ResearchResult } from "../types/research";
-
-export const DEMO_QUERY = scenario.query;
-const normalize = (query: string) => query.trim().replace(/\s+/g, " ").toLowerCase();
 
 function record(value: unknown): asserts value is Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid research response: expected an object.");
@@ -98,10 +94,4 @@ export function adaptResearchResponse(data: unknown): ResearchResult {
 }
 export function buildDemoResult(): ResearchResult {
   return adaptResearchResponse(sample);
-}
-
-export async function searchResearch(query: string): Promise<ResearchResult | null> {
-  if (!query.trim()) throw new Error("Describe your procurement before searching.");
-  // shortcut: one saved response, replace with the backend request when its endpoint is supplied.
-  return normalize(query) === normalize(DEMO_QUERY) ? buildDemoResult() : null;
 }

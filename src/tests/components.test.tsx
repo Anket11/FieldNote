@@ -2,70 +2,90 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Provider } from "react-redux";
-import ResearchWorkspace from "../components/research/ResearchWorkspace";
-import EvidencePanel from "../components/research/results/evidence-panel/EvidencePanel";
-import { buildDemoResult, DEMO_QUERY } from "../services/research";
+import ChatWorkspace from "../components/app/ChatWorkspace";
+import ChatComposer from "../components/app/ChatComposer";
+import ChatMessages from "../components/app/ChatMessages";
+import ResearchAnswerView from "../components/app/answers/AnswerView";
+import SourceLinks from "../components/app/evidence/SourceLinks";
+import { answerSources } from "../services/answerSources";
+import PackageList from "../components/agent/List";
+import PackageDetails from "../components/app/details/RecordDetails";
+import { combinePackages } from "../services/packageComparison";
+import HistoryControls from "../components/agent/location/HistoryControls";
+import PackageMap from "../components/app/answers/RecordMap";
+import { buildDemoResult } from "../services/research";
 import { makeStore } from "../store/store";
-import { citationClosed, evidenceOpened, reviewSelectionChanged, search, selectPackageItems, tabChanged } from "../store/researchSlice";
+import { libraryLoaded } from "../store/researchSlice";
 
-test("three work areas compose compact research, preparation and a removable review collection", async () => {
-  const store = makeStore();
-  const render = () => renderToStaticMarkup(<Provider store={store}><ResearchWorkspace /></Provider>);
-  assert.match(render(), /Describe your procurement/);
-  assert.doesNotMatch(render(), /role="tablist"/);
-  await store.dispatch(search(DEMO_QUERY));
-  assert.match(render(), /Edit search/);
-  assert.doesNotMatch(render(), /<textarea/);
-  const candidate = selectPackageItems(store.getState())[0];
-  store.dispatch(reviewSelectionChanged({ id: candidate.id, selected: true }));
-  store.dispatch(reviewSelectionChanged({ id: "tender_requirements:F1", selected: true }));
-  store.dispatch(reviewSelectionChanged({ id: "readiness_checklist:F1", selected: true }));
-  store.dispatch(tabChanged("review"));
-  const html = render();
-  assert.equal((html.match(/role="tab"/g) ?? []).length, 3);
-  assert.equal((html.match(/aria-selected="true"/g) ?? []).length, 1);
-  assert.match(html, /My review \(3\)/);
-  assert.match(html, /Research overview/);
-  for (const [title, count] of [["Similar packages", 5], ["Historical awards", 2], ["Risks &amp; lessons", 4], ["Requirements to consider", 4], ["Action items", 5], ["Packaging and bidding examples", 3]]) {
-    assert.ok(html.includes(`${title}</button></td><td>${count}</td>`));
-  }
-  assert.match(html, /id="research-readiness_checklist" tabindex="-1"/);
-  assert.match(html, /id="research-historical_awards" tabindex="-1"/);
-  assert.doesNotMatch(html, /Questions to resolve|Open preparation questions|Research brief/);
-  assert.match(html, /<table/);
-  assert.match(html, /Main difference/);
-  assert.match(html, /Packaging and bidding examples/);
-  assert.match(html, /Historical awards/);
-  assert.match(html, /Requirements to consider/);
-  assert.match(html, /Action items/);
-  assert.match(html, /Tentative/);
-  assert.match(html, /View evidence · 2 sources/);
-  assert.doesNotMatch(html, /Selected packages|Selected review items|Backend relevance|Saved sample/);
-  const panel = html.match(/<section id="panel-review"[^>]*>/)?.[0];
-  assert.ok(panel);
-  assert.doesNotMatch(panel, /hidden/);
-  assert.equal((html.split('id="panel-review"')[1].match(/Remove from review/g) ?? []).length, 3);
-  store.dispatch(reviewSelectionChanged({ id: candidate.id, selected: false }));
-  store.dispatch(reviewSelectionChanged({ id: "tender_requirements:F1", selected: false }));
-  store.dispatch(reviewSelectionChanged({ id: "readiness_checklist:F1", selected: false }));
-  assert.match(render(), /Add packages, requirements or action items to collect them here/);
+test("the chat workspace presents only the scripted requested answer with source evidence", () => {
+  const record = buildDemoResult().sections.find((section) => section.id === "historical_awards")!.items[0];
+  const Thread = () => <>
+    <ChatComposer value="" onChange={() => {}} onSend={() => {}} ready running={false} />
+    <ChatMessages messages={[
+      { id: "question", role: "user", text: "Who won the Tuensang contract?" },
+      { id: "answer", role: "assistant", text: "", output: <ResearchAnswerView answer={{ claims: [{ text: "GE T&D India Limited", recordId: record.id, citationIds: record.citationIds }] }} outputId="scripted" checklistEdits={{}} onChecklistChange={() => {}} /> },
+    ]} />
+  </>;
+  const html = renderToStaticMarkup(<ChatWorkspace Thread={Thread} configured />);
+  assert.match(html, /New chat/);
+  assert.match(html, /Ask about procurement/);
+  assert.match(html, /Use example query/);
+  assert.match(html, /GE T&amp;D India Limited/);
+  assert.match(html, /aria-label="Source:/);
+  assert.doesNotMatch(html, /role="tab"|Research overview|Preparation checklist|Procurement results|Procurement Plan/);
 });
 
-test("evidence remains escaped text and opening it preserves work area and review selections", async () => {
+test("map skeleton keeps package details accessible when no Mapbox token is configured", () => {
+  const previous = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  try {
+    const items = buildDemoResult().sections[1].items.filter((item) => item.kind === "package");
+    const html = renderToStaticMarkup(<PackageMap items={items} focusedId="" onPick={() => {}} />);
+    assert.match(html, /Map unavailable/);
+    assert.match(html, /Approximate areas/);
+    for (const item of items) assert.ok(html.includes(item.title.replaceAll("&", "&amp;")));
+    assert.doesNotMatch(html, /api.mapbox.com/);
+  } finally {
+    if (previous === undefined) delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    else process.env.NEXT_PUBLIC_MAPBOX_TOKEN = previous;
+  }
+});
+
+test("annual imagery uses compact year buttons without capture controls", () => {
+  const year = new Date().getUTCFullYear();
+  const html = renderToStaticMarkup(<HistoryControls year={year} onYear={() => {}} hasScene loading={false} error="" onRetry={() => {}} />);
+  assert.equal((html.match(/<button/g) ?? []).length, 11);
+  assert.ok(html.includes(`aria-pressed="true">${year}`));
+  assert.doesNotMatch(html, /<select|type="range"|Captured:|Capture|cloud cover|Timeline|Current year/);
+});
+
+test("shared source previews stay deduplicated and detail fields remain configurable", () => {
   const store = makeStore();
-  await store.dispatch(search(DEMO_QUERY));
-  store.dispatch(tabChanged("prepare"));
-  store.dispatch(reviewSelectionChanged({ id: "readiness_checklist:F1", selected: true }));
-  store.dispatch(evidenceOpened({ itemId: "package:20775f3d78d1298498c53e1284d93b77c09de2e3da843bbea247406879c5ea26", openerId: "trigger" }));
-  const citation = buildDemoResult().citationsById.cite_eedc93c2cbd6da38;
-  const html = renderToStaticMarkup(<EvidencePanel citation={citation} title="Selected finding" citations={[citation]} onCitationChange={() => {}} onClose={() => {}} />);
-  assert.match(html, /Evidence for: Selected finding/);
-  assert.match(html, /Full source passage/);
-  assert.match(html, /Source provenance/);
-  assert.match(html, /&lt;div/);
-  assert.doesNotMatch(html, /<div class='row/);
-  assert.match(html, /Back to finding/);
-  store.dispatch(citationClosed());
-  assert.equal(store.getState().research.activeTab, "prepare");
-  assert.deepEqual(store.getState().research.selectedIds, ["readiness_checklist:F1"]);
+  store.dispatch(libraryLoaded(buildDemoResult()));
+  const result = store.getState().research.result!;
+  const original = result.sections.find((section) => section.id === "overview")!.items[1];
+  const sources = renderToStaticMarkup(<Provider store={store}><SourceLinks groups={answerSources({ claims: [
+    { text: "One claim", recordId: original.id, citationIds: original.citationIds },
+    { text: "Repeated source", recordId: original.id, citationIds: original.citationIds },
+  ] }, result)} /></Provider>);
+  assert.equal((sources.match(/aria-label="Source:/g) ?? []).length, 1);
+  assert.doesNotMatch(sources, /\[\d+\]|View evidence/);
+  const packages = result.sections[1].items.filter((item) => item.kind === "package");
+  const awards = result.sections.find((section) => section.id === "historical_awards")!.items;
+  const entry = combinePackages(packages, awards, result.citationsById)[0];
+  const details = renderToStaticMarkup(<Provider store={store}><PackageDetails item={entry.item} award={entry.award} /></Provider>);
+  assert.doesNotMatch(details, /aria-label="Source:/);
+  assert.doesNotMatch(details, /<h4>[^<]*<span/);
+  for (const field of ["Scope", "Location:", "Supplier", "Award value", "Stated contract duration", "Reported differences", "Unknowns to resolve"]) assert.ok(details.includes(field));
+  assert.match(details, /628739940.00/);
+  assert.match(details, /24 months/);
+});
+
+test("procurement list contains only selectable titles", () => {
+  const items = buildDemoResult().sections[1].items.filter((item) => item.kind === "package");
+  const html = renderToStaticMarkup(<PackageList items={items} selectedId={items[0].id} onSelect={() => {}} controlsId="procurement-details" />);
+  assert.equal((html.match(/<button/g) ?? []).length, items.length);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /aria-controls="procurement-details"/);
+  assert.doesNotMatch(html, /type="checkbox"|href="#source-evidence"|Commissioning of 132 KV|Supplier|Award value|Add to plan/);
 });

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import sample from "../../demo-data/procurement_final.json";
-import { adaptResearchResponse, buildDemoResult, DEMO_QUERY, searchResearch } from "../services/research";
+import { adaptResearchResponse, buildDemoResult } from "../services/research";
 
 test("adapter uses only the new response, preserving every item, excerpt and source project", () => {
   const before = JSON.stringify(sample);
@@ -63,10 +63,4 @@ test("malformed responses and duplicate citation IDs produce a useful error", ()
   const duplicate = structuredClone(sample);
   duplicate.citations.projects[0].sections[0].passages.push(duplicate.citations.projects[0].sections[0].passages[0]);
   assert.throws(() => adaptResearchResponse(duplicate), /duplicate ID/);
-});
-
-test("mock search serves only the supplied scenario and rejects blank input", async () => {
-  assert.ok(await searchResearch(`  ${DEMO_QUERY.toUpperCase().replaceAll(" ", "  ")}  `));
-  assert.equal(await searchResearch("a different substation"), null);
-  await assert.rejects(searchResearch("  "), /Describe your procurement/);
 });
