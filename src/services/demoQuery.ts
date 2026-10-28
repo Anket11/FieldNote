@@ -1,0 +1,1 @@
+export const DEMO_QUERY = "We need a 132 kV substation and connecting transmission line near Tuensang, Nagaland, India, in hilly terrain. Find similar procurements in the available records and show a list with sources.";

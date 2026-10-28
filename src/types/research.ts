@@ -1,3 +1,8 @@
+export interface PackageLocation {
+  name: string;
+  precision: "region" | "place";
+  coordinates?: [number, number];
+}
 /** The sectioned response supplied by the backend. */
 export interface BackendItem {
   id: string;
@@ -8,6 +13,7 @@ export interface BackendItem {
   unknowns?: string[];
   citation_ids: string[];
   label?: string;
+  location?: PackageLocation;
 }
 export interface BackendSection {
   id: string;
@@ -56,6 +62,7 @@ export interface Evidence {
   differences: string[];
   unknowns: string[];
   label?: string;
+  location?: PackageLocation;
   citationIds: string[];
   projectIds: string[];
 }

@@ -1,5 +1,5 @@
-import sample from "../../demo-data/procurement_final.json";
 import scenario from "../../demo-data/query.json";
+import sample from "../../demo-data/procurement_final.json";
 import type { BackendItem, BackendResponse, Citation, Evidence, ResearchResult } from "../types/research";
 
 export const DEMO_QUERY = scenario.query;
@@ -39,6 +39,14 @@ function validateResponse(data: unknown): asserts data is BackendResponse {
       for (const key of ["relevance", "label"]) {
         if (item[key] !== undefined && typeof item[key] !== "string") throw new Error(`Invalid research response: invalid ${key}.`);
       }
+      if (item.location !== undefined) {
+        record(item.location); fields(item.location, ["name"]);
+        if (!["region", "place"].includes(String(item.location.precision))) throw new Error("Invalid research response: invalid location precision.");
+        const coordinates = item.location.coordinates;
+        if (coordinates !== undefined && (!Array.isArray(coordinates) || coordinates.length !== 2 ||
+          !coordinates.every((value) => typeof value === "number" && Number.isFinite(value)) ||
+          Math.abs(coordinates[0]) > 180 || Math.abs(coordinates[1]) > 90)) throw new Error("Invalid research response: invalid coordinates.");
+      }
       for (const key of ["differences", "unknowns"]) if (item[key] !== undefined) strings(item[key]);
     }
   }
@@ -76,6 +84,7 @@ export function adaptResearchResponse(data: unknown): ResearchResult {
   const mapItem = (item: BackendItem): Evidence => ({
     kind: item.id.startsWith("package:") ? "package" : "finding",
     id: item.id, title: item.title, text: item.text, relevance: item.relevance, label: item.label,
+    location: item.location ? { ...item.location, coordinates: item.location.coordinates ? [...item.location.coordinates] : undefined } : undefined,
     differences: [...(item.differences ?? [])], unknowns: [...(item.unknowns ?? [])], citationIds: [...item.citation_ids],
     projectIds: [...new Set(item.citation_ids.flatMap((id) => Object.hasOwn(citationsById, id) ? [citationsById[id].projectId] : []))],
   });
@@ -90,6 +99,7 @@ export function adaptResearchResponse(data: unknown): ResearchResult {
 export function buildDemoResult(): ResearchResult {
   return adaptResearchResponse(sample);
 }
+
 export async function searchResearch(query: string): Promise<ResearchResult | null> {
   if (!query.trim()) throw new Error("Describe your procurement before searching.");
   // shortcut: one saved response, replace with the backend request when its endpoint is supplied.
