@@ -1,89 +1,85 @@
-# Procurement research skeleton
+# Procurement GPT
 
-A single-page Next.js/React app for reviewing procurement research with its source evidence. Native controls and minimal Tailwind layout utilities only; no custom visual CSS or UI library.
+A conversation-driven procurement research app built with Next.js, React, Redux and CopilotKit. Native HTML controls and minimal Tailwind layout only. Gemini answers questions against the supplied procurement library; this app does not perform live tender discovery.
 
 ## Run
 
-Use Node.js 20.9 or newer and npm:
+Use Node.js 20.9 or newer:
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000, choose **Use example query**, then **Search**. The mock currently serves the saved 132 kV substation / connecting-line scenario from `demo-data/query.json`. Only case and whitespace variations of that query are supported; other queries show an empty state. No backend endpoint was supplied, so no live request is made.
+Copy `.env.example` to `.env.local`, add your server-only `GEMINI_API_KEY`, and restart the server. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; set it to another supported Gemini model when needed. Never prefix the Gemini key with `NEXT_PUBLIC_`. `COPILOTKIT_TELEMETRY_DISABLED=true` opts out of runtime telemetry.
 
-## Active data contract
+`NEXT_PUBLIC_MAPBOX_TOKEN` is the existing public Mapbox token for geographic outputs. Geography remains optional. Missing Gemini configuration is shown explicitly, and Send stays disabled until configuration is available; there are no fake AI replies.
 
-The current source is **`demo-data/procurement_final.json`**. It supersedes the older frontend fixtures; the app does not merge the old evidence, awards, gaps or coverage records into this response. All supplied JSON files remain unchanged.
+Open http://localhost:3000. **Use example query** fills a demo procurement request; edit it if needed, then select **Send**. You can also start with a question such as:
 
-The response contains:
+- Who won the Tuensang substation contract?
+- Find similar 132 kV procurements.
+- Show those procurements on a map.
+- Show requirements to consider.
+- Make a preparation checklist.
+- Show 3D terrain near Tuensang, Nagaland, India.
 
-- A report title and overview (4 items).
-- Similar packages (6 entries: 5 package candidates and 1 related finding).
-- Procurement strategy (3 items).
-- Tender requirements (4 items).
-- Risks and lessons (4 items).
-- Readiness checklist (5 tentative items).
-- Historical awards (2 summaries).
-- 24 passages grouped by 3 source projects, with passage text, supporting excerpts (`mentions`), internal source paths and 3 original URLs.
+## Conversation behavior
 
-The interface has three work areas:
+The top composer submits questions directly. Conversation turns appear newest first; each question stays above its response. The model still receives the conversation in chronological order. New chat starts a separate research topic; the sidebar switches between chats in the current page session. Chats and edits are not saved across refreshes.
 
-- **Research:** a clickable overview of result counts, expandable key findings, a filterable package table with expandable rows, and packaging, risk and historical-award examples. Additional response sections appear here using the common evidence list.
-- **Prepare tender:** expandable requirements and action items with Add to review actions.
-- **My review:** selected package examples, requirements and action items, grouped with source actions and Remove controls.
+The agent gives a brief, query-focused synthesis (normally 1–3 short sentences) explaining useful matches, material differences or unknowns, and where to look next. It leaves package-by-package narratives and identifiers in the collection/detail view rather than repeating them in the summary. It configures a reusable collection, checklist or geographic view only when requested or needed. Collections use one list/map renderer for procurement records, risks, requirements, lessons or actions, with optional titles and selected source fields. The old Define / Compare / Procurement Plan workflow tabs are removed. Earlier answers retain their own records, view and filter state; a later filter request produces a new output. Procurement collections default to a split view: titles or map on the left, selected source details on the right. Selecting a record updates only that answer’s detail pane; switching List/Map preserves its selection. This does not silently scope the next question.
 
-After searching, the query becomes a compact header with Edit search. The three work areas stay mounted so inline expansion and selection state survive navigation. Empty groups have a short empty state. Similar-package selection is available for the explicit `package:` records. The source-project filter derives context from attached citations, not verified package metadata. Tender and readiness items can be selected independently for review, without approving a requirement or marking readiness work complete.
+Each chat owns its own CopilotKit provider, thread-bound agent, Redux research library, messages and checklist edits. This matters because CopilotKit application context is provider-scoped. Returning to a chat preserves its work; a response arriving after switching chats stays with its original chat.
 
-`src/types/research.ts` describes both the backend response and the UI contracts. `adaptResearchResponse(unknown)` validates the response shape and IDs, copies item data, normalizes the project-grouped passages into a citation map, and retains exact source text and excerpts. Missing citations render as unavailable. Unsupported source URL schemes are omitted. Replace the mock body of `searchResearch` with a request passed through this adapter when the endpoint and request contract are available.
+Checklist source requirements, source-based preparation actions and uncited suggestions are distinguished. Checkboxes and notes are user state, separate from original source records. The agent can edit existing checklist items only after explicit completion/uncompletion or note instructions. Discussing or generating a checklist does not mark work complete.
 
-## Evidence limits
+## Sources and data boundaries
 
-Summaries, relevance assessments, differences and tentative labels come from the backend. They are displayed separately from the source passages and are not presented as independently checked claims. Some sample assessments make terrain or scope inferences, use unrelated IT/metering examples, or interpret historical technical clauses. Users must inspect the source and review applicability before reuse.
+The active response is `demo-data/procurement_final.json`. Its adapter preserves exact source text, differences, unknowns and excerpts, validates response shape and IDs, and normalizes citations. Read-only agent tools expose this adapted library for arbitrary questions without claiming fresh retrieval. The obsolete query-matching mock search is removed. The composer and live smoke check share one example-query constant.
 
-The new response supplies no review statuses, source page numbers, verified package-level classifications, retrieval coverage, or structured award histories. The UI does not manufacture those fields or carry forward the old fixture's source-checked labels and counts. Historical award summaries remain separate from package candidates; opening/evaluated/signed prices, dates, durations, actual completion and final paid costs must not be conflated.
+`lookupLibrary` returns available records, section/project metadata and conservative package/award associations. `readSources` returns original supplied passages for known source IDs. These tools perform no external tender search. Award links require the existing unique source-notice identity; project/name similarity alone is insufficient.
 
-The shared evidence panel shows exact supplied excerpts and expandable full passage text, the source project context, the source filename/path when supplied, and an original-source link when available. Embedded JSON or HTML in passages is rendered as escaped text. Internal paths appear in collapsed provenance details, not as fabricated public links. A short View evidence action opens all sources for that finding, with a source selector when there are several. On desktop, evidence appears alongside the workspace; on mobile it is a dedicated view with Back to finding. Closing it restores the visible originating control and scroll position. The active work area, project filter and selections are preserved.
+The frontend `presentResearchAnswer` tool accepts a strict, bounded schema. Application validation rejects unknown component kinds, nonexistent records, invalid filters, unrelated citation IDs and mixed source/suggestion checklist items before rendering. Components resolve source facts from canonical records rather than accepting generated supplier, price or duration fields. This constrains references and UI shape; it does not independently verify every generated interpretation.
+
+Document icons in square brackets appear after the first supported mention of each source within an answer, and are suppressed in later claims or repeated detail fields. A source not already cited in the summary appears at its first relevant description or selected detail field. Passages sharing an explicit source URL or a genuine document path (PDF, Word, text or HTML) share one preview; shared JSON cache paths do not merge separate procurement or award records; matching titles alone never merge unknown documents. Hover, keyboard focus or a tap opens a reusable source preview with the supplied title, document/project context, excerpt (or full passage), and original source link when available. No author, page, URL or replacement quotation is invented. Each preview is 480 × 420 pixels, clamped to the viewport, with a fixed header and scrollable passage. It opens above or below its citation according to available space, stays open while using the preview, and closes on pointer exit, outside click or Escape. Keyboard users can Tab from the citation into its controls and scrollable passage. Opening a source does not move or resize the conversation. Source text remains escaped, and unavailable original links stay unavailable.
+
+The Gemini key stays in the Node runtime. The browser calls the CopilotKit runtime route; no separate Python service, A2UI integration, arbitrary generated HTML or unrestricted component catalog is used. Progress is limited to actual request/output activity; no fabricated reasoning or verification graph is shown.
+
+## Existing geographic views
+
+Requested geographic outputs reuse Mapbox, Copernicus DEM GLO-30 and Sentinel-2 imagery. Named places remain approximate, and no infrastructure routes or models are invented. The package map keeps unmapped records selectable and has an explicit service/WebGL/token fallback.
+
+Copernicus elevation uses the public OpenAerialMap Terrarium tile service. Historical RGB imagery uses the public Microsoft Planetary Computer catalog and Data API. Year buttons cover the rolling ten-year window, with one automatically selected capture per year: the clearest among the latest 100 captures, newest on ties. Service availability, cloud cover and coverage are not guaranteed. Terrain is a static 30 m surface model, not year-specific asset geometry.
+
+The shared Mapbox loader retains its required vendor stylesheet; no prebuilt chat stylesheet or new visual theme is added.
 
 ## Component ownership
 
-```text
-src/components/
-  shared/
-    citations/                 # compact evidence trigger and return focus/scroll
-    evidence-details/          # summary, relevance, differences and unknowns
-    evidence-list/             # expandable evidence items and lists
-  research/
-    ResearchWorkspace.tsx
-    search/                    # compact query / editable SearchForm
-    results/
-      ResultsWorkspace.tsx
-      ResearchTabs.tsx
-      evidence-panel/          # excerpts, passage selection and full source text
-      research/
-        ResearchArea.tsx
-        research-overview/ResearchOverview.tsx
-        similar-packages/
-          SimilarPackagesSection.tsx
-          package-table/
-            PackageTable.tsx
-            PackageRow.tsx
-      prepare-tender/PrepareTenderArea.tsx
-      my-review/MyReviewArea.tsx
-```
+There are two component areas:
 
-Components share explicit UI types and do not parse raw JSON. Feature-specific children stay with their parent; shared evidence and citation components are reused across features. The service adapts data, and a single Redux slice owns search state, active work area, filter, one list of review selections and active evidence IDs. Derived package lists use selectors. Each mounted Provider creates its own store; there is no persistence or shared mutable server store.
+- `components/app`: composer, chat sidebar/history, CopilotKit bridge, source bindings and adapters from canonical research data to display props. Feature-specific children live in `answers`, `details` and `evidence`.
+- `components/agent`: reusable `Collection`, `SplitView`, `List`, `Details`, `Checklist`, source citation preview, marker map and location/terrain/imagery views. These components do not read Redux or import procurement record types. They accept data, labels, content slots and callbacks.
+
+The agent requests approved data and presentation settings rather than a procurement-specific component. A collection specifies `recordIds`, `view`, an optional `title`, project filter and inline `fields` (`text`, `relevance`, `differences`, `unknowns`). `layout: "split"` places the selected record beside the list/map; `layout: "list"` shows a standalone list. `selectedId` can choose an initial record from that answer. Optional `detailFields` controls the adjacent pane: `text`, `location`, `supplier`, `awardValue`, `duration`, `relevance`, `differences`, `unknowns`. Each collection owns its selected record and uniquely identified detail pane. The app resolves these against immutable source records. Titles, suppliers, awards and sources are never replaced with generated record fields. Checklist notes and completion remain user edits.
+
+`services/chatLibrary` validates output schemas and source bindings; `services/chatActions` validates explicit checklist changes. Existing procurement lookup, source and geographic integrations are retained.
 
 ## Checks
 
 ```sh
 npm run typecheck
-npm test
 npm run lint
+npm test
 npm run build -- --webpack
 ```
 
-Tests cover exact source mapping, response validation, optional/missing evidence, three work areas, grouped sources, escaped source records, unsupported queries, filtering and selection preservation. Webpack is used for local production verification because the default Turbopack worker cannot bind its internal port in this sandbox.
+Tests cover source immutability, data validation, award association, requested-only output rendering, citation binding, per-chat source-library isolation, checklist intent/item validation, escaped notes and sources, map fallbacks and annual imagery behavior. The scripted transport also exercises real AG-UI events, delayed response isolation and retry behavior. Earlier browser verification covered the actual CopilotKit flow for cited answers, inline lists, checklist typing/edits, chat switching, retry/draft preservation and citation-preview placement, dismissal and keyboard scrolling. Temporary browser-test routes were removed afterward. Live Gemini validation requires a configured key and is separate from these deterministic checks.
 
-Live retrieval, backend integration, supplier ranking, price/completion prediction, document generation, deployment and visual polish remain outside this skeleton.
+With the server running, check the real Gemini request and validate its rendered output contract:
+
+```sh
+node --import tsx --env-file=.env.local scripts/check-chat-agent.ts
+```
+
+The chat distinguishes depleted prepaid credits, quota limits, invalid keys and unavailable models. For depleted credits, add credits to the key's project in Google AI Studio before retrying; changing the prompt cannot resolve billing failures.
