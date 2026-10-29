@@ -4,3 +4,10 @@ node_modules/
 *.tsbuildinfo
 .env*
 !.env.example
+
+__pycache__/
+
+.next-e2e/
+test-results/
+playwright-report/
+coverage/
