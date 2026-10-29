@@ -1,3 +1,40 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+
+/* Shared element defaults only. No component selectors in this file. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--canvas); color: var(--text); font: var(--text-base)/var(--leading-body) var(--font-body); }
+  body { margin: 0; min-width: 0; }
+  h1, h2, h3, h4, h5, h6, p, dl, dd, blockquote { margin: 0; overflow-wrap: anywhere; }
+  h1, h2, h3, h4, h5, h6 { color: var(--heading); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+  h1 { font-size: var(--text-2xl); }
+  h2 { font-size: var(--text-xl); }
+  h3 { font-size: var(--text-lg); }
+  h4, h5, h6 { font-size: var(--text-base); }
+  a { color: var(--link); text-underline-offset: var(--space-1); overflow-wrap: anywhere; }
+  a:hover { color: var(--action); }
+  button, input, select, textarea { font: inherit; }
+  /* Mapbox owns its buttons; app control appearance lives in CSS Modules. */
+  button:disabled, textarea:disabled { cursor: not-allowed; }
+  textarea, select { max-width: 100%; border: var(--border-width) solid var(--border-control); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); padding: var(--space-2) var(--space-3); }
+  textarea { resize: vertical; }
+  textarea::placeholder { color: var(--text-muted); opacity: 1; }
+  input[type="checkbox"] { accent-color: var(--action); }
+  :focus-visible { outline: var(--focus-width) solid var(--focus); outline-offset: var(--focus-offset); }
+  summary { cursor: pointer; overflow-wrap: anywhere; }
+  [role="status"] { color: var(--text-muted); }
+  [role="alert"] { color: var(--error); background: var(--error-surface); border-inline-start: var(--accent-width) solid var(--error); border-radius: var(--radius-sm); padding: var(--space-4); overflow-wrap: anywhere; }
+  ::selection { background: var(--surface-selected); color: var(--heading); }
+}
+
+/* Shared motion recipes. Modules opt in through theme variables. */
+@keyframes chat-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes chat-pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+@keyframes chat-spin { to { transform: rotate(360deg); } }
+@keyframes chat-shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0s; --motion-enter: none; --motion-pulse: none; --motion-spin: none; --motion-shimmer: none; }
+}

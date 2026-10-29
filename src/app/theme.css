@@ -1,0 +1,107 @@
+/* Design values only. Component rules belong beside their React component. */
+@font-face { font-family: Geist; src: url('/fonts/Geist-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Geist; src: url('/fonts/Geist-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Geist; src: url('/fonts/Geist-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: Manrope; src: url('/fonts/Manrope-Variable.woff2') format('woff2'); font-weight: 200 800; font-style: normal; font-display: swap; }
+
+:root {
+  /* Reference: Nouswise center chat. Corporate blue stays available for maps and data. */
+  --brand-navy: #002244;
+  --brand-cyan: #009fda;
+  --canvas: #fbfaf8;
+  --canvas-sticky: rgb(251 250 248 / 95%);
+  --surface: #ffffff;
+  --surface-composer: #fdfbfa;
+  --surface-question: #f1efec;
+  --surface-hover: #f3f4f6;
+  --surface-selected: #eef1f8;
+  --text: #22201d;
+  --heading: #111827;
+  --text-muted: #687080;
+  --text-subtle: #88919f;
+  --text-inverse: #ffffff;
+  --action: #151829;
+  --action-hover: #30364a;
+  --link: #4659a6;
+  --border: #e8e8ed;
+  --border-control: #271a0024;
+  --citation: #b8ea383f;
+  --citation-border: #b8ea38;
+  --error: #a32828;
+  --error-surface: #fff2f2;
+  --success: #25916a;
+  --focus: #536cba;
+  --font-body: Geist, 'Helvetica Neue', sans-serif;
+  --font-answer: Manrope, Geist, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-message: .9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --leading-tight: 1.4;
+  --leading-body: 1.65;
+  --leading-answer: 1.8;
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --border-width: 1px;
+  --border-style: var(--border-width) solid var(--border);
+  --radius-sm: .5rem;
+  --radius-md: 1rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 8%), 0 1px 2px rgb(0 0 0 / 5%);
+  --shadow-composer: 0 1px 8px 2px rgb(36 33 28 / 5%);
+  --shadow-preview: 0 12px 40px rgb(21 24 41 / 12%), 0 2px 6px rgb(21 24 41 / 6%);
+  --focus-width: 2px;
+  --focus-offset: 3px;
+  --accent-width: 2px;
+  --page-width: 100%;
+  --navigation-marker: #d1d5db;
+  --map-target: #0079b8;
+  --map-target-shadow: #003b5c55;
+  --sidebar-width: 6.5rem;
+  --chat-list-width: 17rem;
+  --reading-width: 64rem;
+  --question-width: 34rem;
+  --workspace-width: 76rem;
+  --reader-width: 28rem;
+  --header-height: 3.5rem;
+  --brand-accent: linear-gradient(90deg, #38566f, #39b7dc 55%, #ffca50);
+  --control-height: 2.75rem;
+  --map-height: 28rem;
+  --preview-header-max: 45%;
+  --icon-size: 1rem;
+  --disabled-opacity: .45;
+  --motion-fast: 160ms;
+  --motion-ease: cubic-bezier(.2,.7,.2,1);
+  --motion-enter: chat-enter 240ms cubic-bezier(.2,.7,.2,1) both;
+  --motion-pulse: chat-pulse 1.5s ease-in-out infinite;
+  --motion-spin: chat-spin 1.2s linear infinite;
+  --motion-shimmer: chat-shimmer 1.6s ease-in-out infinite;
+  --z-composer: 20;
+  --z-preview: 50;
+}
+
+@theme inline {
+  --color-action: var(--action);
+  --color-surface: var(--surface);
+  --color-canvas: var(--canvas);
+  --color-text: var(--text);
+  --color-border: var(--border);
+  --font-sans: var(--font-body);
+  --spacing: var(--space-1);
+}

@@ -15,7 +15,7 @@ Copy `.env.example` to `.env.local`, add your server-only `GEMINI_API_KEY`, and 
 
 `NEXT_PUBLIC_MAPBOX_TOKEN` is the existing public Mapbox token for geographic outputs. Geography remains optional. Missing Gemini configuration is shown explicitly, and Send stays disabled until configuration is available; there are no fake AI replies.
 
-Open http://localhost:3000. **Use example query** fills a demo procurement request; edit it if needed, then select **Send**. You can also start with a question such as:
+Open http://localhost:3000 for the landing page. Its **Explore the workspace** CTA opens `/workspace`, where the procurement research app lives. **Use example query** fills a demo procurement request; edit it if needed, then select **Send**. You can also start with a question such as:
 
 - Who won the Tuensang substation contract?
 - Find similar 132 kV procurements.

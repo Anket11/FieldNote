@@ -1,0 +1,135 @@
+.page { background: var(--canvas); color: var(--text); }
+.page a { text-decoration: none; }
+.skip { position: absolute; left: 1rem; top: -5rem; z-index: 100; background: var(--surface); padding: 1rem; }
+.skip:focus { top: 1rem; }
+.header { max-width: 86rem; margin: auto; min-height: 6rem; padding: 1rem 3rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; border-bottom: var(--border-style); }
+.brand { display: flex; }
+.brand img { width: 220px; height: auto; }
+.navigation { display: flex; gap: 2rem; }
+.navigation a, .navCta { color: var(--text); font-size: var(--text-sm); }
+.navigation a { padding: .75rem 0; }
+.navigation a:hover, .textLink:hover, .secondary:hover { text-decoration: underline; text-underline-offset: 5px; }
+.navCta { display: inline-flex; gap: .75rem; align-items: center; border: 1px solid var(--border-control); border-radius: var(--radius-sm); padding: .75rem 1rem; white-space: nowrap; }
+.navCta:hover { background: var(--surface-question); }
+.hero { max-width: 76rem; margin: auto; text-align: center; padding: 6rem 2rem 4.5rem; }
+.intro { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: 1.75rem; }
+.intro span { padding: 0 .75rem; color: var(--border-control); }
+.hero h1 { font-family: var(--font-answer); font-size: clamp(2.75rem, 6.4vw, 5.5rem); font-weight: 500; line-height: 1.13; letter-spacing: -.065em; color: var(--action); }
+.hero h1 span { text-decoration: underline; text-decoration-color: var(--citation-border); text-decoration-thickness: .085em; text-underline-offset: .14em; }
+.heroText { max-width: 45rem; margin: 2rem auto 0; font-size: 1.125rem; line-height: 1.8; color: var(--text-muted); }
+.heroActions { display: flex; gap: 1.5rem; align-items: center; justify-content: center; margin: 2rem 0 1.25rem; }
+.primary, .secondary, .textLink { display: inline-flex; align-items: center; justify-content: center; gap: .75rem; min-height: 3rem; font-size: var(--text-sm); font-weight: 500; }
+.page .primary { padding: .875rem 1.375rem; border-radius: var(--radius-sm); background: var(--action); color: var(--text-inverse); transition: background var(--motion-fast); }
+.page .primary:hover { background: var(--action-hover); }
+.page .primary:active, .navCta:active { opacity: .8; }
+.secondary, .textLink { color: var(--action); }
+.heroNote { font-size: var(--text-xs); color: var(--text-muted); }
+.evidence { max-width: 70rem; margin: 0 auto; border: var(--border-style); border-radius: var(--radius-sm); background: var(--surface); scroll-margin-top: 2rem; overflow: hidden; }
+.workbenchHeader, .workbenchFooter { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; font-size: var(--text-xs); color: var(--text-muted); }
+.workbenchHeader { border-bottom: var(--border-style); }
+.workbenchHeader > span:first-child { display: flex; align-items: center; gap: .75rem; color: var(--action); font-weight: 500; }
+.workbench { display: grid; grid-template-columns: 1fr 1fr; }
+.question { padding: 3rem; display: flex; align-items: flex-start; flex-direction: column; justify-content: center; background: var(--surface-composer); border-right: var(--border-style); }
+.questionLabel { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 1.25rem; }
+.question h2 { font-family: var(--font-answer); font-weight: 500; font-size: clamp(1.5rem, 2.5vw, 2rem); letter-spacing: -.04em; line-height: 1.4; }
+.question > p { color: var(--text-muted); font-size: var(--text-sm); margin-top: 1.25rem; }
+.question .textLink { margin-top: 1.75rem; }
+.evidenceStack { padding: 2rem; }
+.record, .lesson { padding: 1.25rem; border: var(--border-style); border-radius: var(--radius-sm); position: relative; }
+.recordType { display: flex; align-items: center; gap: .5rem; color: var(--text-muted); font-size: var(--text-xs); margin-bottom: .75rem; }
+.sourceNumber { margin-left: auto; font-family: var(--font-mono); }
+.record h3, .lesson h3 { font-size: var(--text-base); font-weight: 500; }
+.record p, .lesson > p { font-size: var(--text-sm); color: var(--text-muted); margin-top: .5rem; }
+.recordFoot { display: flex; gap: 1rem; padding-top: 1rem; margin-top: 1rem; border-top: var(--border-style); font-size: var(--text-xs); color: var(--text); }
+.recordFoot span { color: var(--text-muted); }
+.lesson { margin-top: 1.5rem; border-left: 2px solid var(--citation-border); }
+.lesson::before { content: ''; position: absolute; height: 1.5rem; border-left: 1px solid var(--border-control); top: -1.5rem; left: 1.25rem; }
+.source { margin-top: 1rem; font-size: var(--text-xs); }
+.source summary { width: fit-content; min-height: 2.75rem; align-content: center; padding: .35rem .5rem; border-radius: .25rem; background: var(--citation); color: var(--text); }
+.source summary svg { vertical-align: middle; margin-right: .25rem; }
+.source p { padding: 1rem 0 .5rem; line-height: 1.7; }
+.source > span { color: var(--text-muted); }
+.limit { display: flex; gap: .5rem; align-items: flex-start; color: var(--text-muted); font-size: var(--text-xs); margin: 1.25rem 0 0; }
+.limit svg { flex-shrink: 0; margin-top: 2px; }
+.workbenchFooter { background: var(--surface-composer); border-top: var(--border-style); }
+.approach, .capabilities, .vision { max-width: 70rem; margin: auto; scroll-margin-top: 3rem; }
+.approach { padding: 7rem 0 5rem; }
+.sectionHeading { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 4rem; margin-bottom: 3rem; }
+.sectionHeading h2, .capabilityIntro h2, .vision h2 { font-family: var(--font-answer); font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.25; font-weight: 500; letter-spacing: -.045em; }
+.sectionHeading > p { color: var(--text-muted); font-size: var(--text-message); }
+.layers { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--border-style); border-bottom: var(--border-style); }
+.layers article { padding: 2rem; border-right: var(--border-style); }
+.layers article:first-child { padding-left: 0; }
+.layers article:last-child { border-right: 0; padding-right: 0; }
+.layerIndex { font-size: var(--text-sm); color: var(--text-muted); }
+.layers h3 { font-size: 2rem; font-family: var(--font-answer); letter-spacing: -.045em; font-weight: 500; margin: .75rem 0; }
+.layers p { font-size: var(--text-sm); color: var(--text-muted); max-width: 28ch; }
+.layerSource { display: block; color: var(--text); font-size: var(--text-xs); margin-top: 1.5rem; }
+.capabilities { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 2rem 0 6rem; }
+.capabilityIntro > p { margin: 1.25rem 0; color: var(--text-muted); }
+.capabilityList article { display: flex; gap: 1.25rem; padding: 1.5rem 0; border-bottom: var(--border-style); }
+.capabilityList article:first-child { padding-top: 0; }
+.capabilityList svg { flex-shrink: 0; color: var(--action); margin-top: .25rem; }
+.capabilityList h3 { font-weight: 500; font-size: var(--text-base); }
+.capabilityList p { color: var(--text-muted); font-size: var(--text-sm); margin-top: .5rem; }
+.vision { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 2.5rem; background: var(--surface-question); border-radius: var(--radius-sm); }
+.visionLabel { display: block; font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 1rem; }
+.vision h2 { font-size: 1.75rem; }
+.vision p { font-size: var(--text-message); }
+.vision .visionNote { font-size: var(--text-xs); color: var(--text-muted); margin-top: 1rem; }
+.closing { max-width: 70rem; margin: auto; padding: 6rem 1.5rem; text-align: center; }
+.closingMark { display: inline-flex; color: var(--text-muted); margin-bottom: 1.5rem; }
+.closing h2 { font-family: var(--font-answer); font-weight: 500; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -.05em; line-height: 1.2; }
+.closing p { color: var(--text-muted); margin: 1.25rem 0 1.75rem; }
+.footer { max-width: 80rem; padding: 1.5rem 2rem; margin: auto; border-top: var(--border-style); display: flex; justify-content: space-between; align-items: center; gap: 1rem; font-size: var(--text-xs); color: var(--text-muted); }
+.footer a { color: var(--text); min-height: 2.75rem; align-content: center; }
+.footerBrand { font-weight: 600; }
+@media (max-width: 1200px) { .evidence, .approach, .capabilities, .vision { margin-inline: 2rem; } }
+@media (max-width: 800px) {
+  .header { padding: 1rem 1.5rem; gap: 1rem; min-height: 5rem; }
+  .brand img { width: 180px; }
+  .navigation { display: none; }
+  .hero { padding: 4rem 1.5rem 3rem; }
+  .hero h1 { font-size: clamp(2.75rem, 8vw, 4rem); }
+  .desktopBreak { display: none; }
+  .heroText { max-width: 35rem; font-size: var(--text-base); }
+  .question { padding: 2rem; }
+  .evidenceStack { padding: 1.5rem; }
+  .workbench { grid-template-columns: 1fr; }
+  .question { border-right: 0; border-bottom: var(--border-style); }
+  .question h2 { max-width: 24ch; }
+  .question > p { max-width: 48ch; }
+  .sectionHeading { gap: 2rem; }
+  .approach { padding-top: 4rem; padding-bottom: 3rem; }
+  .layers article { padding: 1.5rem; }
+  .capabilities, .vision { gap: 2rem; }
+  .vision { padding: 2rem; }
+}
+@media (max-width: 540px) {
+  .header { padding: 1rem; }
+  .brand img { width: 145px; }
+  .navCta { padding: .65rem .75rem; font-size: var(--text-xs); gap: .4rem; }
+  .intro { max-width: 25ch; margin: 0 auto 1.5rem; line-height: 1.8; }
+  .intro span { padding-inline: .25rem; }
+  .hero { padding: 3rem 1rem 2.5rem; }
+  .hero h1 { font-size: clamp(2.35rem, 10vw, 3.25rem); letter-spacing: -.055em; }
+  .heroActions { flex-direction: column; gap: .5rem; }
+  .heroNote { max-width: 31ch; margin: auto; }
+  .evidence, .approach, .capabilities, .vision { margin-inline: 1rem; }
+  .workbenchHeader, .workbenchFooter { padding: 1rem; flex-wrap: wrap; gap: .5rem; }
+  .workbenchHeader > span:last-child, .workbenchFooter > span:last-child { display: none; }
+  .question, .evidenceStack { padding: 1.5rem; }
+  .sectionHeading, .capabilities, .vision { grid-template-columns: 1fr; }
+  .sectionHeading { gap: 1.25rem; margin-bottom: 2rem; }
+  .layers { grid-template-columns: 1fr; }
+  .layers article, .layers article:first-child, .layers article:last-child { padding: 1.5rem 0; border-right: 0; border-bottom: var(--border-style); }
+  .layers article:last-child { border-bottom: 0; }
+  .layers h3 { display: inline; margin-left: 1rem; font-size: 1.75rem; }
+  .layers p { margin-top: .75rem; max-width: 100%; }
+  .layerSource { margin-top: .75rem; }
+  .capabilities { padding-bottom: 3rem; }
+  .vision { padding: 1.5rem; }
+  .closing { padding-block: 4rem; }
+  .footer { padding: 1rem; flex-wrap: wrap; }
+  .footer p { order: 3; width: 100%; }
+}
