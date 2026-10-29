@@ -1,0 +1,55 @@
+.root { height: 100dvh; min-width: 0; background: var(--canvas); }
+.layout { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); height: calc(100dvh - var(--header-height)); }
+.layout[data-workspace-open="true"] { grid-template-columns: var(--chat-list-width) minmax(0, 1fr); }
+.layout[data-sidebar-open="false"] { grid-template-columns: 0 minmax(0, 1fr); }
+.content { grid-column: 2; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-gutter: stable; padding: 0 var(--space-6) var(--space-8); scroll-padding-top: 9rem; background: radial-gradient(ellipse at 50% 0%, var(--surface), transparent 65%); }
+@media (max-width: 64rem) {
+  .layout, .layout[data-workspace-open="true"], .layout[data-sidebar-open="false"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .layout[data-sidebar-open="false"] { grid-template-rows: minmax(0, 1fr); }
+  .content { grid-column: 1; padding-inline: var(--space-5); }
+}
+@media (max-width: 30rem) { .content { padding-inline: var(--space-4); } }
+
+@media(max-width: 64rem) { .layout:not([data-workspace-open="true"]) > aside { position: absolute; left: 0; top: var(--header-height); z-index: 30; border-radius: 0 0 .5rem 0; } }
+
+.loading { padding: 3rem; text-align: center; }
+.workspaceHeading { max-width: var(--reading-width); margin: 1.5rem auto 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.workspaceHeading > div { min-width: 0; flex: 1; }
+.workspaceHeading p { font-size: .625rem; letter-spacing: .12em; color: var(--text-muted); margin-bottom: .25rem; }
+.workspaceHeading input { width: 100%; border: 1px solid transparent; border-radius: .35rem; padding: .2rem 0; background: transparent; color: var(--heading); font-family: var(--font-answer); font-size: 1.25rem; font-weight: 600; }
+.workspaceHeading input:hover, .workspaceHeading input:focus { border-color: var(--border-control); background: var(--surface); }
+.workspaceHeading > span { font-size: .6875rem; color: var(--text-muted); }
+.tabs { max-width: var(--reading-width); margin: 1rem auto 0; display: flex; gap: 1.5rem; border-bottom: var(--border-style); }
+.tabs button { display: flex; align-items: center; gap: .5rem; padding: .8rem .15rem; min-height: 2.75rem; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--text-muted); font-size: .8125rem; cursor: pointer; }
+.tabs button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs button span { font-size: .6875rem; background: var(--surface-selected); border-radius: .4rem; padding: 0 .35rem; }
+.dialog { width: min(30rem, calc(100vw - 2rem)); padding: 1.75rem; border: var(--border-style); border-radius: 1rem; color: var(--text); background: var(--surface); box-shadow: var(--shadow-preview); }
+.dialog::backdrop { background: rgb(16 47 60 / 40%); backdrop-filter: blur(3px); }
+.dialogTitle { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.dialog h2 { font-size: 1.25rem; }
+.dialog p { color: var(--text-muted); font-size: .875rem; margin: .75rem 0 1.5rem; }
+.dialog label { display: block; font-size: .8125rem; margin-bottom: .5rem; }
+.dialog input { width: 100%; min-height: 2.75rem; padding: .75rem; border: var(--border-style); border-radius: .5rem; color: var(--text); background: var(--surface); }
+.dialog button { min-height: 2.75rem; border: var(--border-style); border-radius: .5rem; padding: .5rem 1rem; cursor: pointer; color: var(--text); background: var(--surface); }
+.dialogTitle button { border: 0; padding: .5rem; display: grid; place-items: center; }
+.dialogActions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.5rem; }
+.dialogActions button[type="submit"] { background: var(--action); color: var(--text-inverse); }
+.dialogActions button:disabled { opacity: .5; cursor: not-allowed; }
+@media(max-width: 540px) { .workspaceHeading > span { display: none; } .tabs { gap: 1rem; } .workspaceHeading { margin-top: 1rem; } }
+
+.researchIndex { max-width: var(--reading-width); margin: 1rem auto; border: var(--border-style); border-radius: .75rem; background: var(--surface); font-size: .8125rem; overflow: clip; }
+.researchIndex summary { display: flex; align-items: center; gap: .65rem; min-height: 3.25rem; padding: .75rem 1rem; color: var(--heading); list-style: none; font-weight: 500; }
+.researchIndex summary::-webkit-details-marker { display: none; }
+.researchIndex summary > svg:first-child { color: var(--accent); flex-shrink: 0; }
+.historyCount { margin-left: auto; padding: .15rem .5rem; border-radius: .4rem; background: var(--surface-hover); color: var(--text-muted); font-size: .6875rem; font-weight: 400; white-space: nowrap; }
+.historyChevron { color: var(--text-muted); flex-shrink: 0; transition: transform var(--motion-fast); }
+.researchIndex[open] .historyChevron { transform: rotate(180deg); }
+.researchIndex ol { margin: 0; padding: .35rem .5rem .5rem; list-style: none; border-top: var(--border-style); max-height: 20rem; overflow-y: auto; }
+.researchIndex li + li { border-top: var(--border-style); }
+.researchIndex button { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr) 1rem; align-items: start; gap: .75rem; width: 100%; min-height: var(--control-height); text-align: left; border: 0; border-radius: .4rem; background: transparent; color: var(--text); padding: .85rem .65rem; cursor: pointer; font: inherit; line-height: 1.6; }
+.researchIndex button:hover { background: var(--surface-hover); color: var(--accent); }
+.researchIndex button:focus-visible { outline-offset: -2px; }
+.historyNumber { display: grid; place-items: center; height: 1.65rem; border: var(--border-style); border-radius: .35rem; color: var(--text-muted); background: var(--canvas); font-size: .6875rem; font-family: var(--font-mono); }
+.historyQuestion { padding-top: .15rem; overflow-wrap: anywhere; }
+.researchIndex button > svg { margin-top: .35rem; color: var(--text-subtle); }
+@media(max-width: 540px) { .researchIndex summary { padding-inline: .75rem; } .researchIndex button { gap: .5rem; padding-inline: .35rem; } }

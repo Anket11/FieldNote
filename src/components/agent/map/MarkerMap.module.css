@@ -1,0 +1,4 @@
+.map { height: 24rem; width: 100%; border: var(--border-style); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface-hover); }
+.marker { display: grid; place-items: center; width: var(--control-height); height: var(--control-height); padding: 0; border: 3px solid var(--surface); border-radius: 50%; font-weight: var(--weight-semibold); cursor: pointer; background: var(--action); color: var(--text-inverse); font-family: var(--font-body); font-size: var(--text-sm); box-shadow: 0 2px 8px rgb(16 47 60 / 25%); transition: background-color var(--motion-fast), box-shadow var(--motion-fast); }
+.marker:hover, .marker[aria-pressed="true"] { background: var(--accent); box-shadow: 0 0 0 3px var(--citation-border), 0 3px 10px rgb(16 47 60 / 20%); z-index: 4; }
+@media(max-width: 40rem) { .map { height: 20rem; } }

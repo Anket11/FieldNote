@@ -5,32 +5,37 @@
 @font-face { font-family: Manrope; src: url('/fonts/Manrope-Variable.woff2') format('woff2'); font-weight: 200 800; font-style: normal; font-display: swap; }
 
 :root {
-  /* Reference: Nouswise center chat. Corporate blue stays available for maps and data. */
+  /* Shared research-desk palette across the public site and workspace. */
+  --accent: #287a76;
+  --accent-soft: #e3f1eb;
+  --surface-deep: #102f3c;
+  --text-on-deep: #c2d7dc;
+  --grid-line: rgb(40 122 118 / 7%);
   --brand-navy: #002244;
   --brand-cyan: #009fda;
-  --canvas: #fbfaf8;
-  --canvas-sticky: rgb(251 250 248 / 95%);
+  --canvas: #f5f7f7;
+  --canvas-sticky: rgb(245 247 247 / 94%);
   --surface: #ffffff;
-  --surface-composer: #fdfbfa;
-  --surface-question: #f1efec;
-  --surface-hover: #f3f4f6;
-  --surface-selected: #eef1f8;
-  --text: #22201d;
-  --heading: #111827;
-  --text-muted: #687080;
-  --text-subtle: #88919f;
+  --surface-composer: #ffffff;
+  --surface-question: #eaf0f2;
+  --surface-hover: #f0f4f5;
+  --surface-selected: #e4efed;
+  --text: #283e48;
+  --heading: #142e3b;
+  --text-muted: #60727a;
+  --text-subtle: #7e9097;
   --text-inverse: #ffffff;
-  --action: #151829;
-  --action-hover: #30364a;
-  --link: #4659a6;
-  --border: #e8e8ed;
-  --border-control: #271a0024;
-  --citation: #b8ea383f;
-  --citation-border: #b8ea38;
+  --action: #163847;
+  --action-hover: #245365;
+  --link: #226c68;
+  --border: #dfe7e8;
+  --border-control: #c9d6d9;
+  --citation: #e3f1eb;
+  --citation-border: #86b6a4;
   --error: #a32828;
   --error-surface: #fff2f2;
   --success: #25916a;
-  --focus: #536cba;
+  --focus: #287a76;
   --font-body: Geist, 'Helvetica Neue', sans-serif;
   --font-answer: Manrope, Geist, sans-serif;
   --font-mono: ui-monospace, monospace;
@@ -73,14 +78,14 @@
   --navigation-marker: #d1d5db;
   --map-target: #0079b8;
   --map-target-shadow: #003b5c55;
-  --sidebar-width: 6.5rem;
-  --chat-list-width: 17rem;
+  --sidebar-width: 5rem;
+  --chat-list-width: 14rem;
   --reading-width: 64rem;
   --question-width: 34rem;
   --workspace-width: 76rem;
   --reader-width: 28rem;
-  --header-height: 3.5rem;
-  --brand-accent: linear-gradient(90deg, #38566f, #39b7dc 55%, #ffca50);
+  --header-height: 4.5rem;
+  --brand-accent: #287a76;
   --control-height: 2.75rem;
   --map-height: 28rem;
   --preview-header-max: 45%;

@@ -1,4 +1,6 @@
+import styles from "./LocationCanvas.module.css";
 import { useEffect, useRef, useState } from "react";
+import { addTargetMarker } from "../map/targetMarker";
 import MapboxLoader from "../map/MapboxLoader";
 import type { MapboxMap } from "@/types/mapbox";
 import type { MapLocation, MapView, SatelliteScene } from "@/types/geography";
@@ -26,9 +28,7 @@ export default function LocationCanvas({ location, token, view, scene, onError }
       current = new sdk.Map({ container: container.current, accessToken: token, style: "mapbox://styles/mapbox/streets-v12", center: location.coordinates, zoom: 12 });
       map.current = current;
       current.addControl(new sdk.NavigationControl());
-      const pin = document.createElement("span");
-      pin.textContent = "Selected location";
-      new sdk.Marker({ element: pin }).setLngLat(location.coordinates).addTo(current);
+      addTargetMarker(sdk, current, location);
       current.on("load", () => {
         current.addSource("elevation", copernicusTerrainSource);
         current.addSource("terrain-imagery", { type: "raster", url: "mapbox://mapbox.satellite", tileSize: 256 });
@@ -38,7 +38,10 @@ export default function LocationCanvas({ location, token, view, scene, onError }
           paint: { "fill-extrusion-height": ["get", "height"], "fill-extrusion-base": ["get", "min_height"] } });
         setLoaded(true);
       });
-      current.on("error", (event) => onError(event.sourceId === "historical" ? "The historical image tiles could not load. Try another capture." : event.sourceId === "elevation" ? "Copernicus elevation could not load. Map and historical imagery remain available." : "Some map data could not load. Check your connection and Mapbox access."));
+      current.on("error", (event) => {
+        const message = mapLayerError(event.sourceId);
+        if (message) onError(message);
+      });
       observer = new ResizeObserver(() => current.resize());
       observer.observe(container.current);
     } catch { onError("Map unavailable. Check WebGL support and Mapbox access."); }
@@ -50,11 +53,11 @@ export default function LocationCanvas({ location, token, view, scene, onError }
     onError("");
     updateMapView(current, view, scene);
   }, [loaded, view, scene, onError]);
-  return <div className="space-y-2">
+  return <div className={styles.root}>
     <MapboxLoader onReady={() => setReady(true)} onError={() => onError("Map could not be downloaded. Check your connection.")} />
     {!loaded && <p role="status">Loading map…</p>}
-    <div ref={container} className="h-[28rem] w-full" role="region" aria-label="Location map" />
-    <button type="button" disabled={!loaded} onClick={() => map.current?.jumpTo({ center: location.coordinates, zoom: 12, bearing: 0, pitch: view === "terrain" ? 70 : 0 })}>Reset view</button>
+    <div ref={container} className={styles.map} role="region" aria-label="Location map" />
+    <button type="button" className={styles.reset} disabled={!loaded} onClick={() => map.current?.jumpTo({ center: location.coordinates, zoom: 12, bearing: 0, pitch: view === "terrain" ? 70 : 0 })}>Reset view</button>
     {view === "terrain" && <p>Copernicus DEM GLO-30 · 30 m surface elevation · true scale. Satellite imagery and available buildings provide context.</p>}
   </div>;
 }
@@ -71,4 +74,14 @@ export function updateMapView(current: MapboxMap, view: MapView, scene?: Satelli
         attribution: `Contains modified Copernicus Sentinel data (${scene.date.slice(0, 4)}) / Microsoft Planetary Computer` });
       current.addLayer({ id: "historical", type: "raster", source: "historical" });
     }
+}
+
+export function mapLayerError(sourceId?: string): string | null {
+  if (sourceId === "historical") return "The historical image tiles could not load. Try another capture.";
+  if (sourceId === "elevation") return "3D elevation could not load. Map and historical imagery remain available.";
+  return null;
+}
+
+export function visibleMapError(message: string): string {
+  return message.startsWith("Some map data could not load.") ? "" : message;
 }

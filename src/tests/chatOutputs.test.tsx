@@ -30,7 +30,7 @@ test("procurement collection keeps titles on the left and selected details on th
   const html = render({ claims: [], output: { kind: "collection", recordIds: [items[0].id], view: "list" } });
   assert.match(html, /132 kV double circuit transmission line from Jadugoda to Dhalbhumgarh/);
   assert.doesNotMatch(html, /GIS substation upgrade at Tuensang|Preparation checklist|Research findings/);
-  assert.match(html, /md:grid-cols-2/);
+  assert.match(html, /aria-label="Details" class="detail"/);
   assert.match(html, /aria-label="Details"/);
   assert.match(html, /Commissioning of 132 KV/);
   assert.match(html, /Supplier/);
@@ -102,8 +102,32 @@ test("a procurement summary does not hide the separate source for its supplier a
   const item = result.sections.flatMap((section) => section.items).find((item) => item.title === "GIS substation upgrade at Tuensang to 132 kV")!;
   const html = render({ claims: [{ text: "A useful substation comparator", recordId: item.id, citationIds: item.citationIds }],
     output: { kind: "collection", recordIds: [item.id], view: "list", layout: "split" } });
-  const supplier = html.slice(html.indexOf("<dt>Supplier"), html.indexOf("<dt>Award value"));
+  const supplier = html.slice(html.indexOf('>Supplier</dt>'), html.indexOf('>Award value</dt>'));
   assert.match(supplier, /GE T&amp;D India Limited/);
   assert.match(supplier, /aria-label="Source: GIS substation awarded to GE T&amp;D India/);
   assert.equal((html.match(/aria-label="Source:/g) ?? []).length, 2);
+});
+
+test("multi-topic answers render separate packages, risks and lessons with unique sources", () => {
+  const result = buildDemoResult();
+  const procurement = result.sections.flatMap((section) => section.items).find((item) => item.kind === "package")!;
+  const findings = result.sections.find((section) => section.id === "risks_and_lessons")!.items;
+  const outputs: NonNullable<ResearchAnswer["outputs"]> = [
+    { kind: "collection", title: "Procurement packages", recordIds: [procurement.id], view: "list", layout: "split" },
+    { kind: "collection", title: "Risks", recordIds: [findings[0].id], view: "list", layout: "list", fields: ["text"] },
+    { kind: "collection", title: "Lessons", recordIds: [findings[1].id], view: "list", layout: "list", fields: ["text"] },
+  ];
+  const html = render({ claims: [], outputs });
+  assert.doesNotMatch(html, /<select|Source project|All source projects/);
+  const risks = html.indexOf('>Risks<');
+  const lessons = html.indexOf('>Lessons<');
+  assert.ok(html.indexOf('>Procurement packages<') < risks && risks < lessons);
+  assert.ok(html.indexOf(findings[0].title) > risks);
+  assert.ok(html.indexOf(findings[1].title) > lessons);
+  assert.equal((html.match(/aria-label="Details"/g) ?? []).length, 1);
+  assert.equal((html.match(/aria-pressed="true">List/g) ?? []).length, 1);
+  assert.equal(outputs[1].kind, "collection");
+  if (outputs[1].kind !== "collection") throw new Error("Expected a finding collection");
+  const withRepeatedSource = render({ claims: [], outputs: [outputs[1], { ...outputs[1], title: "Same source again" }] });
+  assert.equal((withRepeatedSource.match(/aria-label="Source:/g) ?? []).length, 1);
 });

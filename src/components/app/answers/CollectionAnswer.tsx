@@ -3,7 +3,7 @@ import { useAppSelector } from "@/store/hooks";
 import Collection from "../../agent/Collection";
 import Details from "../../agent/Details";
 import RecordDetails from "../details/RecordDetails";
-import { combinePackages } from "@/services/packageComparison";
+import { combinePackages, packageLocationText } from "@/services/packageComparison";
 import RecordMap from "./RecordMap";
 import SourceLinks from "../evidence/SourceLinks";
 import { firstSourceMentions } from "@/services/answerSources";
@@ -11,12 +11,11 @@ import type { Citation } from "@/types/research";
 import type { CollectionOutput } from "@/types/chat";
 
 interface Props {
-  output: CollectionOutput;
+  output: CollectionOutput; query?: string;
   sourceGroups?: Citation[][];
-  onFilterChange?: (projectId: string) => void;
 }
 const labels = { text: "Details", relevance: "Why it’s relevant", differences: "Reported differences", unknowns: "Unknowns to resolve" };
-export default function CollectionAnswer({ output, onFilterChange, sourceGroups = [] }: Props) {
+export default function CollectionAnswer({ output, query, sourceGroups = [] }: Props) {
   const result = useAppSelector((state) => state.research.result);
   const records = useMemo(() => result?.sections.flatMap((section) => section.items) ?? [], [result]);
   const requested = useMemo(() => output.recordIds.flatMap((id) => records.find((item) => item.id === id) ?? []), [output.recordIds, records]);
@@ -33,20 +32,18 @@ export default function CollectionAnswer({ output, onFilterChange, sourceGroups 
     });
     const citations = firstSourceMentions(sourceGroups, rows.map(({ record, fields, firstField }) => !fields.length || firstField ? record.citationIds : []));
     return rows.map(({ record, fields, firstField }, index) => ({
-      id: record.id, title: `${record.title}${record.label ? ` · ${record.label}` : ""}`, groupIds: record.projectIds,
+      id: record.id, description: split ? packageLocationText(record) : undefined, title: `${record.title}${record.label ? ` · ${record.label}` : ""}`,
       meta: !split && !fields.length ? <SourceLinks groups={citations[index]} /> : undefined,
       content: fields.length > 0 ? <Details fields={fields.map((field) => ({
         label: labels[field], value: record[field], suffix: field === firstField ? <> <SourceLinks groups={citations[index]} /></> : undefined,
       }))} /> : undefined,
     }));
   }, [requested, output.fields, result, split, sourceGroups]);
-  return <Collection items={items} title={output.title} initialView={output.view} initialFilter={output.projectId}
-    filters={result?.projects.filter((project) => requested.some((item) => item.projectIds.includes(project.id))).map((project) => ({ id: project.id, label: project.title }))}
-    filterLabel="Source project" allLabel="All source projects" listLabel={output.title ?? "Results"} viewLabel="Result view" initialSelectedId={output.selectedId}
-    onFilterChange={onFilterChange}
+  return <Collection items={items} title={output.title} initialView={output.view}
+    listLabel={output.title ?? "Results"} viewLabel="Result view" initialSelectedId={output.selectedId}
     renderDetails={split ? (selected) => {
       const record = requested.find((item) => item.id === selected.id)!;
       return <RecordDetails item={record} award={entries.find((entry) => entry.item.id === record.id)?.award} fields={output.detailFields} sourceGroups={sourceGroups} />;
     } : undefined}
-    renderMap={supportsMap ? (visible, selectedId, onSelect, controlsId) => <RecordMap key={visible.map((item) => item.id).join(",")} items={requested} visibleItems={visible} focusedId={selectedId} onPick={onSelect} controlsId={controlsId} /> : undefined} />;
+    renderMap={supportsMap ? (_, selectedId, onSelect, controlsId) => <RecordMap items={requested} query={query} targetLocation={output.targetLocation} focusedId={selectedId} onPick={onSelect} controlsId={controlsId} /> : undefined} />;
 }

@@ -1,0 +1,13 @@
+.root { height: var(--header-height); display: flex; gap: 1rem; align-items: center; padding: 0 1.5rem; background: var(--surface); border-bottom: var(--border-style); }
+.toggle { display: grid; place-items: center; width: var(--control-height); height: var(--control-height); flex-shrink: 0; padding: 0; border: var(--border-style); border-radius: var(--radius-sm); background: var(--surface); color: var(--action); cursor: pointer; transition: background-color var(--motion-fast); }
+.toggle:hover { background: var(--surface-hover); }
+.toggle svg { width: 20px; height: 20px; }
+.brand { display: flex; align-items: center; gap: 1.5rem; margin: 0; }
+.brand a { display: flex; }
+.brand img { width: 180px; height: auto; }
+.productName { border-left: var(--border-style); padding-left: 1.5rem; font-size: .875rem; font-weight: 400; letter-spacing: -.02em; }
+.productName strong { font-weight: 600; }
+.mode { margin-left: auto; display: flex; align-items: center; gap: .5rem; color: var(--text-muted); font-size: .75rem; }
+.mode > span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+@media(max-width: 640px) { .root { padding-inline: 1rem; gap: .75rem; } .brand img { width: 155px; } .productName { display: none; } .mode { font-size: .625rem; } }
+@media(max-width: 400px) { .mode { display: none; } }

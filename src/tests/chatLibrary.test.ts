@@ -11,13 +11,13 @@ test("an answer can cite only evidence belonging to its identified record", () =
   assert.throws(() => validateAnswer({ claims: [{ text: "Unsupported claim", recordId: record.id, citationIds: ["cite_6def679435c47bf2"] }] }), /does not belong/);
 });
 
-test("only approved output types, actual procurements and valid filters are accepted", () => {
+test("only approved output types, actual procurements are accepted", () => {
   const result = buildDemoResult();
   const procurement = result.sections[1].items[0];
-  assert.equal(validateAnswer({ claims: [], output: { kind: "collection", recordIds: [procurement.id], view: "map", projectId: "P162086" } }).output?.kind, "collection");
+  assert.equal(validateAnswer({ claims: [], output: { kind: "collection", recordIds: [procurement.id], view: "map" } }).output?.kind, "collection");
   assert.throws(() => validateAnswer({ claims: [], output: { kind: "html", content: "<script>bad</script>" } }));
   assert.throws(() => validateAnswer({ claims: [], output: { kind: "collection", recordIds: ["readiness_checklist:F1"], view: "map" } }), /requires a procurement/);
-  assert.throws(() => validateAnswer({ claims: [], output: { kind: "collection", recordIds: [procurement.id], view: "list", projectId: "invented" } }), /Unknown project/);
+  assert.throws(() => validateAnswer({ claims: [], output: { kind: "collection", recordIds: [procurement.id], view: "list", projectId: "invented" } }), /Unrecognized key/);
   assert.throws(() => validateAnswer({ claims: [], output: { kind: "collection", view: "list", recordIds: ["invented"] } }), /unavailable/);
   assert.throws(() => validateAnswer({ claims: [], output: { kind: "collection", view: "list", recordIds: [], component: "arbitrary" } }));
 });
@@ -45,9 +45,10 @@ test("library tools find records in user wording and expose exact source referen
   assert.equal(sources[0].text, result.citationsById[procurement.citationIds[0]].text);
   assert.throws(() => readSources({ citationIds: ["invented"] }, result), /Unknown source/);
   assert.throws(() => lookupLibrary({ recordIds: ["invented"] }, result), /Unknown library record/);
-  const filtered = lookupLibrary({ projectId: "P162086", sectionId: "historical_awards" }, result);
-  assert.equal(filtered.records.length, 1);
-  assert.equal(filtered.records[0].id, "historical_awards:F2");
+  const awards = lookupLibrary({ sectionId: "historical_awards" }, result);
+  assert.equal(awards.records.length, 2);
+  assert.ok(awards.records.some((record) => record.id === "historical_awards:F2"));
+  assert.throws(() => lookupLibrary({ projectId: "P162086" }, result), /Unrecognized key/);
 });
 
 test("collections configure titles and source fields for different record types", () => {
@@ -65,4 +66,15 @@ test("split presentation validates selected records and permitted detail fields"
   assert.throws(() => validateAnswer({ claims: [], output: { ...output, selectedId: "outside-this-answer" } }), /belong/);
   assert.throws(() => validateAnswer({ claims: [], output: { ...output, detailFields: ["duration", "duration"] } }), /unique/);
   assert.throws(() => validateAnswer({ claims: [], output: { ...output, detailFields: ["invented"] } }));
+});
+
+test("an answer supports separate package and risk sections and rejects mixed collections", () => {
+  const result = buildDemoResult();
+  const procurement = result.sections.flatMap((section) => section.items).find((item) => item.kind === "package")!;
+  const risk = result.sections.find((section) => section.id === "risks_and_lessons")!.items[0];
+  const packages = { kind: "collection", title: "Procurement packages", recordIds: [procurement.id], view: "list", layout: "split" };
+  const risks = { kind: "collection", title: "Risks and lessons", recordIds: [risk.id], view: "list", layout: "list" };
+  assert.doesNotThrow(() => validateAnswer({ claims: [], outputs: [packages, risks] }, result));
+  assert.throws(() => validateAnswer({ claims: [], output: { ...packages, recordIds: [procurement.id, risk.id] } }, result), /separate sections/);
+  assert.throws(() => validateAnswer({ claims: [], output: packages, outputs: [risks] }, result), /output or outputs/);
 });

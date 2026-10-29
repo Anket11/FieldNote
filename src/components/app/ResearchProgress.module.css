@@ -1,0 +1,24 @@
+.root { width: 100%; display: grid; gap: var(--space-3); color: var(--text-muted); font-size: var(--text-sm); }
+.current { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--text-muted); font-weight: var(--weight-normal); }
+.indicator { display: inline-grid; place-items: center; color: var(--link); }
+.indicator svg { width: var(--icon-size); height: var(--icon-size); }
+.root[data-state="running"] .indicator { animation: var(--motion-spin); }
+.root[data-state="completed"] .indicator { color: var(--success); }
+.root[data-state="failed"] .indicator { color: var(--error); }
+.activity > summary, .plan > summary { display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: var(--space-8); list-style: none; }
+.activity > summary::-webkit-details-marker, .plan > summary::-webkit-details-marker { display: none; }
+.activity > summary > svg, .plan > summary > svg { width: var(--icon-size); height: var(--icon-size); transition: transform var(--motion-fast); }
+.activity[open] > summary > svg:last-of-type, .plan[open] > summary > svg:last-of-type { transform: rotate(180deg); }
+.plan { max-width: 30rem; padding: var(--space-2) var(--space-3); border: var(--border-style); border-radius: var(--radius-sm); background: var(--surface); }
+.plan > summary { width: 100%; color: var(--text-muted); font-size: var(--text-xs); }
+.plan > summary > svg:last-child { margin-inline-start: auto; }
+.timeline { list-style: none; margin: var(--space-2) 0 0 var(--space-2); padding: var(--space-2) 0 var(--space-1) var(--space-4); border-inline-start: var(--border-style); animation: var(--motion-enter); }
+.timeline li { position: relative; display: grid; grid-template-columns: var(--space-4) minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); padding: var(--space-2) 0; font-size: var(--text-xs); }
+.dot { display: grid; place-items: center; color: var(--text-subtle); padding-top: 2px; }
+.dot svg { width: var(--space-3); height: var(--space-3); }
+.timeline li[data-status="completed"] .dot { color: var(--success); }
+.timeline li[data-status="running"] .dot { color: var(--link); animation: var(--motion-spin); }
+.timeline li[data-status="failed"] .dot { color: var(--error); }
+.status { text-transform: capitalize; color: var(--text-muted); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 30rem) { .status { grid-column: 2; } }

@@ -1,5 +1,10 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { formatSourceText, isStructuredSource } from "@/services/sourceText";
+import ChatIcon from "../../app/ChatIcon";
+import styles from "./SourceCitation.module.css";
+import { useContext, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { WorkspaceContext } from "../../app/WorkspaceContext";
+import SourceAnnotations from "../../app/SourceAnnotations";
 import { sourcePlacement } from "./sourcePlacement";
 
 interface CitationSource {
@@ -7,6 +12,7 @@ interface CitationSource {
   context?: string; fileName?: string; url?: string;
 }
 export default function SourceCitation({ source }: { source: CitationSource }) {
+  const workspace = useContext(WorkspaceContext);
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const preview = useRef<HTMLDivElement>(null);
@@ -23,7 +29,7 @@ export default function SourceCitation({ source }: { source: CitationSource }) {
   }
   function leave() {
     cancelClose();
-    if (!keyboard.current) timer.current = setTimeout(() => setPosition(null), 160);
+    if (!keyboard.current && !preview.current?.contains(document.activeElement) && !window.getSelection()?.toString()) timer.current = setTimeout(() => setPosition(null), 160);
   }
   function blur(event: React.FocusEvent) {
     const target = event.relatedTarget;
@@ -62,10 +68,12 @@ export default function SourceCitation({ source }: { source: CitationSource }) {
       window.removeEventListener("scroll", reposition, true);
     };
   }, [open, id]);
+  const text = open ? formatSourceText(source.text) : "";
+  const excerpts = !open || isStructuredSource(source.text) ? [] : source.excerpts?.map(formatSourceText).filter(Boolean);
   const url = source.url && /^https?:\/\//i.test(source.url) ? source.url : undefined;
   return <>
     <button ref={trigger} type="button" aria-label={`Source: ${source.title}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
-      className="inline-flex min-h-6 items-center gap-0.5 align-baseline px-1"
+      className={styles.trigger}
       onPointerEnter={(event) => { if (event.pointerType !== "touch") { keyboard.current = false; show(); } }} onPointerLeave={(event) => { if (event.pointerType !== "touch") leave(); }}
       onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) { keyboard.current = true; show(); } }} onBlur={blur}
       onKeyDown={(event) => {
@@ -75,26 +83,25 @@ export default function SourceCitation({ source }: { source: CitationSource }) {
         }
       }}
       onClick={(event) => { event.stopPropagation(); show(); }}>
-      <span aria-hidden="true">[</span><svg aria-hidden="true" width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-        <path d="M14 2H5v20h14V7zM14 2v6h5M8 12h8M8 16h8" />
-      </svg><span aria-hidden="true">]</span>
+      <ChatIcon name="document" />
     </button>
-    {position && createPortal(<div ref={preview} id={id} role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} data-placement={position.side}
-      className="fixed z-50 box-border flex flex-col overflow-hidden border bg-white text-black"
+    {position && createPortal(<div ref={preview} id={id} role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} data-placement={position.side} data-workspace-id={workspace?.workspace.id} data-source-id={source.id} data-annotation-title={source.title}
+      className={styles.preview}
       style={{ left: position.left, top: position.top, width: position.width, height: position.height }}
       onPointerEnter={cancelClose} onPointerLeave={(event) => { if (event.pointerType !== "touch") leave(); }} onFocusCapture={(event) => { cancelClose(); keyboard.current = event.target.matches(":focus-visible"); }} onBlur={blur}>
-      <header className="max-h-[45%] shrink-0 space-y-2 overflow-y-auto border-b p-4">
-        <div className="flex items-start justify-between gap-3"><h3 id={`${id}-title`}>{source.title}</h3>
-          <button type="button" aria-label="Close source preview" onClick={() => { trigger.current?.focus({ preventScroll: true }); keyboard.current = false; setPosition(null); }}>×</button>
+      <header className={styles.header}>
+        <div className={styles.title}><h3 id={`${id}-title`}>{source.title}</h3>
+          <button type="button" className={styles.close} aria-label="Close source preview" onClick={() => { trigger.current?.focus({ preventScroll: true }); keyboard.current = false; setPosition(null); }}><ChatIcon name="close" /></button>
         </div>
         {source.context && <p>{source.context}</p>}{source.fileName && <p>{source.fileName}</p>}
         {url ? <a href={url} target="_blank" rel="noreferrer">Open source ↗</a> : <p>Source link unavailable.</p>}
       </header>
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4" tabIndex={0} aria-label="Source passage">
-        {source.excerpts?.length ? <>
-          {source.excerpts.map((excerpt, index) => <blockquote key={index} className="whitespace-pre-wrap break-words">{excerpt}</blockquote>)}
-          <details><summary>Full source passage</summary><p className="whitespace-pre-wrap break-words">{source.text}</p></details>
-        </> : <p className="whitespace-pre-wrap break-words">{source.text}</p>}
+      <div className={styles.annotations}><SourceAnnotations id={source.id} title={source.title} text={text} /></div>
+      <div className={styles.passage} tabIndex={0} aria-label="Source passage">
+        {excerpts?.length ? <>
+          {excerpts.map((excerpt, index) => <blockquote key={index} className={styles.text}>{excerpt}</blockquote>)}
+          <details><summary>Full source passage</summary><p className={styles.text}>{text}</p></details>
+        </> : <p className={styles.text}>{text}</p>}
       </div>
     </div>, document.body)}
   </>;

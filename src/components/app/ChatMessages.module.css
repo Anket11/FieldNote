@@ -1,0 +1,10 @@
+.root { margin: var(--space-2) 0 0; padding: 0 var(--space-2); display: grid; gap: var(--space-8); min-width: 0; list-style: none; }
+.turn { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); scroll-margin-top: 9rem; animation: var(--motion-enter); }
+.message { width: 100%; min-width: 0; display: grid; gap: var(--space-3); font-family: var(--font-answer); }
+.message[data-role="user"] { width: fit-content; max-width: min(var(--question-width), 90%); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-1); border-radius: var(--radius-md); background: var(--surface-question); color: var(--text); font-family: var(--font-body); font-size: var(--text-message); line-height: var(--leading-body); }
+.message[data-role="assistant"] { padding-top: .75rem; font-size: var(--text-base); line-height: var(--leading-answer); }
+.message[data-role="assistant"]:has(> .heading:only-child) { display: none; }
+.heading { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.text { white-space: pre-wrap; }
+.empty { padding: var(--space-16) var(--space-6); text-align: center; color: var(--text-muted); font-family: var(--font-answer); font-size: var(--text-sm); }
+@media (max-width: 40rem) { .root { padding: 0; margin-top: var(--space-2); gap: var(--space-8); } .message[data-role="user"] { max-width: 100%; } }

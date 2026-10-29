@@ -92,3 +92,13 @@ test("terrain uses Copernicus DEM tiles with Terrarium decoding", () => {
   assert.match(copernicusTerrainSource.tiles[0], /cop-dem-glo-30/);
   assert.equal(new URL(copernicusTerrainSource.tiles[0]).searchParams.get("algorithm"), "terrarium");
 });
+
+test("generic map tile warnings are suppressed but specific failed layers remain actionable", async () => {
+  const { mapLayerError, visibleMapError } = await import("../components/agent/location/LocationCanvas");
+  assert.equal(visibleMapError("Some map data could not load. Check your connection and Mapbox access."), "");
+  assert.equal(visibleMapError("Map access is not configured."), "Map access is not configured.");
+  assert.equal(mapLayerError(), null);
+  assert.equal(mapLayerError("composite"), null);
+  assert.match(mapLayerError("historical")!, /historical image tiles/);
+  assert.match(mapLayerError("elevation")!, /3D elevation/);
+});

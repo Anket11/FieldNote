@@ -26,8 +26,10 @@ test("the chat workspace presents only the scripted requested answer with source
       { id: "answer", role: "assistant", text: "", output: <ResearchAnswerView answer={{ claims: [{ text: "GE T&D India Limited", recordId: record.id, citationIds: record.citationIds }] }} outputId="scripted" checklistEdits={{}} onChecklistChange={() => {}} /> },
     ]} />
   </>;
-  const html = renderToStaticMarkup(<ChatWorkspace Thread={Thread} configured />);
-  assert.match(html, /New chat/);
+  const shell = renderToStaticMarkup(<ChatWorkspace Thread={Thread} configured />);
+  assert.match(shell, /Opening your workspaces/);
+  const store = makeStore(); store.dispatch(libraryLoaded(buildDemoResult()));
+  const html = renderToStaticMarkup(<Provider store={store}><Thread /></Provider>);
   assert.match(html, /Ask about procurement/);
   assert.match(html, /Use example query/);
   assert.match(html, /GE T&amp;D India Limited/);
@@ -42,7 +44,7 @@ test("map skeleton keeps package details accessible when no Mapbox token is conf
     const items = buildDemoResult().sections[1].items.filter((item) => item.kind === "package");
     const html = renderToStaticMarkup(<PackageMap items={items} focusedId="" onPick={() => {}} />);
     assert.match(html, /Map unavailable/);
-    assert.match(html, /Approximate areas/);
+    assert.match(html, /Source coordinates are shown where available/);
     for (const item of items) assert.ok(html.includes(item.title.replaceAll("&", "&amp;")));
     assert.doesNotMatch(html, /api.mapbox.com/);
   } finally {
@@ -76,7 +78,7 @@ test("shared source previews stay deduplicated and detail fields remain configur
   const details = renderToStaticMarkup(<Provider store={store}><PackageDetails item={entry.item} award={entry.award} /></Provider>);
   assert.doesNotMatch(details, /aria-label="Source:/);
   assert.doesNotMatch(details, /<h4>[^<]*<span/);
-  for (const field of ["Scope", "Location:", "Supplier", "Award value", "Stated contract duration", "Reported differences", "Unknowns to resolve"]) assert.ok(details.includes(field));
+  for (const field of ["Scope", "Location", "Supplier", "Award value", "Stated contract duration", "Reported differences", "Unknowns to resolve"]) assert.ok(details.includes(field));
   assert.match(details, /628739940.00/);
   assert.match(details, /24 months/);
 });

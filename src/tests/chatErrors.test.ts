@@ -13,3 +13,8 @@ test("quota, key and unavailable-model failures are distinguished", () => {
   assert.match(describeChatError(new Error("API_KEY_INVALID")).message, /rejected the API key/);
   assert.match(describeChatError(new Error("models/example was not found")).message, /model is unavailable/);
 });
+test("source validation failures are distinct from connectivity or configuration errors", () => {
+  const error = describeChatError(new Error("ANSWER_VALIDATION_FAILED"));
+  assert.match(error.message, /source or output validation/);
+  assert.doesNotMatch(error.message, /Gemini configuration|ANSWER_VALIDATION_FAILED/);
+});

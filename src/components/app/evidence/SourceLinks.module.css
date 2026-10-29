@@ -1,0 +1,6 @@
+.root {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  vertical-align: baseline;
+}

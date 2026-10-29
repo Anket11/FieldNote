@@ -1,0 +1,16 @@
+.root { position: sticky; top: var(--space-4); margin-top: var(--space-4); display: flex; flex-direction: column; max-height: calc(100dvh - var(--header-height) - var(--space-8)); min-width: 0; border: var(--border-style); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-preview); overflow: hidden; animation: var(--motion-enter); }
+.header { position: relative; flex-shrink: 0; padding: var(--space-6); padding-right: var(--space-12); border-bottom: var(--border-style); background: var(--surface-composer); }
+.header h3 { margin-top: var(--space-3); font-size: var(--text-base); color: var(--heading); }
+.document { display: grid; place-items: center; width: var(--space-10); height: var(--space-12); border: var(--border-style); border-radius: var(--radius-sm); color: var(--text-subtle); background: var(--surface); }
+.close { position: absolute; top: var(--space-3); right: var(--space-3); width: var(--control-height); height: var(--control-height); display: grid; place-items: center; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--text-muted); cursor: pointer; }
+.close:hover { background: var(--surface-hover); color: var(--heading); }
+.meta { margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+.original { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); margin-top: var(--space-4); border-radius: var(--radius-pill); background: var(--action); color: var(--text-inverse); font-size: var(--text-xs); text-decoration: none; }
+.original:hover { background: var(--action-hover); color: var(--text-inverse); }
+.original svg { width: var(--icon-size); height: var(--icon-size); }
+.content { min-height: 0; overflow-y: auto; padding: var(--space-6); overscroll-behavior: contain; font-family: var(--font-answer); font-size: var(--text-sm); line-height: var(--leading-answer); white-space: pre-wrap; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 70rem) { .root { position: fixed; inset: var(--space-4); z-index: var(--z-preview); max-height: none; margin: 0; } }
+
+.annotations { padding: .5rem 1rem; border-bottom: var(--border-style); max-height: 45%; overflow-y: auto; flex-shrink: 0; }
+.annotations:empty { display: none; }

@@ -40,9 +40,9 @@ function response(input: RunAgentInput, question: string): { name: string; args:
       { id: "permit", recordId: "readiness_checklist:F2" },
       { id: "review", suggestion: "Arrange a team review of the permit responsibilities." },
     ] } };
-  } else if (/similar|\blist\b|\bmap\b|filter/i.test(question)) {
+  } else if (/similar|\blist\b|\bmap\b/i.test(question)) {
     answer = { claims: [], output: { kind: "collection", recordIds: procurements.map((item) => item.id),
-      view: /\bmap\b/i.test(question) ? "map" : "list", ...(/filter/i.test(question) ? { projectId: "P127974" } : {}) } };
+      view: /\bmap\b/i.test(question) ? "map" : "list" } };
   } else if (/unknown|unsupported/i.test(question)) {
     answer = { claims: [{ text: "The supplied library does not establish that information.", citationIds: [] }] };
   } else if (/ambiguous|clarif|its risks/i.test(question)) {
@@ -63,6 +63,22 @@ export class ScriptedAgent extends AbstractAgent {
       const attempt = (attempts.get(key) ?? 0) + 1;
       attempts.set(key, attempt);
       subscriber.next({ type: EventType.RUN_STARTED, threadId: input.threadId, runId: input.runId });
+      if (/progress/i.test(question)) {
+        let toolIndex = 0;
+        const toolResult = (name: string, args: unknown, content: unknown) => {
+          const toolCallId = `${name}-${input.runId}-${++toolIndex}`;
+          subscriber.next({ type: EventType.TOOL_CALL_START, toolCallId, toolCallName: name, parentMessageId: `research-${input.runId}` });
+          subscriber.next({ type: EventType.TOOL_CALL_ARGS, toolCallId, delta: JSON.stringify(args) });
+          subscriber.next({ type: EventType.TOOL_CALL_END, toolCallId });
+          subscriber.next({ type: EventType.TOOL_CALL_RESULT, toolCallId, messageId: `result-${toolCallId}`, content: JSON.stringify(content) });
+        };
+        const tasks = [{ id: "read", label: "Read source passages", status: "running" }];
+        toolResult("reportResearchPlan", { tasks }, { tasks });
+        toolResult("lookupLibrary", {}, { records: [award] });
+        toolResult("readSources", { citationIds: award.citationIds }, award.citationIds.map((id) => library.citationsById[id]));
+        const completed = tasks.map((task) => ({ ...task, status: "completed" }));
+        toolResult("reportResearchPlan", { tasks: completed }, { tasks: completed });
+      }
       const timer = setTimeout(() => {
         if (/fail/i.test(question) && attempt === 1) {
           subscriber.next({ type: EventType.RUN_ERROR, message: "Scripted temporary service failure", code: "TEST_RETRY" });

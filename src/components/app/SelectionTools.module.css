@@ -1,0 +1,8 @@
+.root { position: fixed; z-index: 200; border: var(--border-style); border-radius: .75rem; background: var(--surface); color: var(--text); box-shadow: var(--shadow-preview); overflow-y: auto; }
+.actions { display: flex; align-items: center; padding: .2rem; gap: .1rem; }
+.actions button { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 2.75rem; padding: .4rem .5rem; border: 0; border-radius: .5rem; background: transparent; color: var(--action); font-size: .75rem; cursor: pointer; white-space: nowrap; }
+.actions button:hover { background: var(--accent-soft); }
+.actions button:last-child { margin-left: auto; }
+.editor { padding: 0 .75rem .75rem; border-top: var(--border-style); }
+.quote { font-size: .75rem; color: var(--text-muted); margin: .75rem 0; padding-left: .65rem; border-left: 2px solid var(--citation-border); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.editor form { padding: .75rem; margin-bottom: 0; }

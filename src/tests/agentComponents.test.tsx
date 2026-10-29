@@ -9,13 +9,12 @@ import ChatMessages from "../components/app/ChatMessages";
 
 test("agent components render arbitrary labelled data and slots without an app provider", () => {
   const html = renderToStaticMarkup(<>
-    <Collection title="Site decisions" initialFilter="open" filters={[{ id: "open", label: "Open" }]}
-      items={[{ id: "a", title: "Access road", groupIds: ["open"], content: <Details fields={[{ label: "Owner", value: "Site team" }, { label: "Due", value: undefined }]} />, meta: <a href="#source">[1]</a> },
-        { id: "b", title: "Filtered record", groupIds: ["closed"] }]} />
+    <Collection title="Site decisions"
+      items={[{ id: "a", title: "Access road", content: <Details fields={[{ label: "Owner", value: "Site team" }, { label: "Due", value: undefined }]} />, meta: <a href="#source">[1]</a> }]} />
     <Checklist label="Next steps" notesLabel="Decision notes" items={[{ id: "visit", title: "Visit the site", done: false, notes: "<keep escaped>", context: "Tentative" }]} onChange={() => {}} />
   </>);
   for (const text of ["Site decisions", "Access road", "Site team", "Not specified", "Decision notes", "Tentative", "&lt;keep escaped&gt;", 'href="#source"']) assert.ok(html.includes(text));
-  assert.doesNotMatch(html, /Filtered record|Procurement|Source project/);
+  assert.doesNotMatch(html, /<select|Procurement|Source project/);
   const list = renderToStaticMarkup(<List label="Choices" items={[{ id: "x", title: "Option A" }]} selectedId="x" onSelect={() => {}} controlsId="details" />);
   assert.match(list, /aria-pressed="true"/);
   assert.match(list, /aria-controls="details"/);
@@ -44,7 +43,7 @@ test("split collections share selection between list/map and a reusable detail s
   for (const view of ["list", "map"] as const) {
     const html = renderToStaticMarkup(<Collection items={items} initialView={view} initialSelectedId="b" renderDetails={details}
       renderMap={(_, selectedId) => <p>Map selection: {selectedId}</p>} />);
-    assert.match(html, /md:grid-cols-2/);
+    assert.match(html, /aria-label="Details" class="detail"/);
     assert.match(html, /Detail for b/);
     assert.doesNotMatch(html, /Detail for a/);
     if (view === "map") assert.match(html, /Map selection: b/);
@@ -54,10 +53,9 @@ test("split collections share selection between list/map and a reusable detail s
       assert.ok(html.includes(`id="${target}" aria-label="Details"`));
     }
   }
-  const filtered = renderToStaticMarkup(<Collection items={[{ ...items[0], groupIds: ["visible"] }, { ...items[1], groupIds: ["hidden"] }]}
-    initialSelectedId="b" initialFilter="visible" renderDetails={details} />);
-  assert.match(filtered, /Detail for a/);
-  assert.doesNotMatch(filtered, /Detail for b/);
+  const fallback = renderToStaticMarkup(<Collection items={items} initialSelectedId="missing" renderDetails={details} />);
+  assert.match(fallback, /Detail for a/);
+  assert.doesNotMatch(fallback, /Detail for b|<select/);
 });
 
 test("document citation icons appear after descriptions without numeric labels", async () => {
@@ -76,9 +74,18 @@ test("shared details render lists, retain zero values and hide citations for mis
     { label: "Scope", value: ["Design", "Testing"], suffix: <span>scope-source</span> },
     { label: "Unknown", value: [], suffix: <span>unrelated-source</span> },
   ]} />);
-  assert.match(html, /<dd>0/);
+  assert.match(html, /<dd[^>]*>0/);
   assert.match(html, /<li>Design<\/li><li>Testing<\/li>/);
   assert.match(html, /scope-source|count-source/);
   assert.match(html, /Not specified/);
   assert.doesNotMatch(html, /unrelated-source/);
+});
+
+
+test("selectable results expose location context and retain the detail relationship", () => {
+  const html = renderToStaticMarkup(<List items={[{ id: "a", title: "Substation upgrade", description: "Tuensang, Nagaland" }]} selectedId="a" onSelect={() => {}} controlsId="record-detail" />);
+  assert.match(html, /Tuensang, Nagaland/);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /aria-controls="record-detail"/);
+  assert.match(html, /aria-hidden="true">01/);
 });

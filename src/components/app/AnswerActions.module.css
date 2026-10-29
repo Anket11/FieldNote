@@ -1,0 +1,7 @@
+.root { width: 100%; display: flex; align-items: center; gap: var(--space-1); padding-top: var(--space-1); }
+.root button { min-width: var(--control-height); min-height: var(--control-height); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-2); border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--text-subtle); font-size: var(--text-xs); cursor: pointer; transition: background-color var(--motion-fast), color var(--motion-fast), transform var(--motion-fast); }
+.root button:hover:enabled { background: var(--surface-hover); color: var(--heading); }
+.root button:active:enabled { transform: scale(.94); }
+.root button:disabled { opacity: var(--disabled-opacity); }
+.root svg { width: var(--space-5); height: var(--space-5); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

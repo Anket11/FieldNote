@@ -1,0 +1,11 @@
+.root { position: fixed; right: var(--space-4); top: 50%; transform: translateY(-50%); z-index: 10; padding: var(--space-3) var(--space-2); border-radius: var(--radius-md); background: var(--surface); }
+.root ol { max-height: 60dvh; overflow-y: auto; scrollbar-width: thin; list-style: none; display: grid; padding: 0; margin: 0; }
+.root button { display: flex; align-items: center; justify-content: flex-end; width: var(--space-8); height: var(--space-8); padding: 0 var(--space-1); border: 0; background: transparent; cursor: pointer; border-radius: var(--radius-sm); }
+.marker { width: var(--space-3); height: 2px; border-radius: var(--radius-pill); background: var(--navigation-marker); transition: width var(--motion-fast), background-color var(--motion-fast); }
+.root button[data-near-active="true"] .marker { width: var(--space-6); }
+.root button[aria-current] .marker, .root button:hover .marker, .root button:focus-visible .marker { width: var(--space-6); background: var(--action); }
+.tooltip { position: fixed; z-index: var(--z-preview); max-width: min(22rem, calc(100vw - 7rem)); padding: var(--space-3) var(--space-4); border: var(--border-style); border-radius: var(--radius-md); background: var(--surface); color: var(--heading); box-shadow: var(--shadow-sm); font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-body); overflow-wrap: anywhere; pointer-events: none; animation: var(--motion-enter); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 64rem) { .root { position: relative; right: auto; top: auto; transform: none; width: fit-content; max-width: 100%; margin-inline-start: auto; padding: var(--space-1) var(--space-2); } .root ol { display: flex; max-width: 100%; overflow-x: auto; } }
+@media (hover: none) { .tooltip { display: none; } }
+
+.root button:focus-visible { outline-offset: -2px; }
