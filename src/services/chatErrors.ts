@@ -1,6 +1,9 @@
 export interface ChatError { message: string; helpUrl?: string }
 export function describeChatError(error: unknown): ChatError {
   const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  if (/ANSWER_VALIDATION_FAILED/.test(message)) return {
+    message: "The agent returned an answer that did not pass source or output validation. Retry this question.",
+  };
   if (/prepay(?:ment)? credits.*deplet|insufficient.*credits/i.test(message)) return {
     message: "Gemini prepaid credits are depleted. Add credits to the API key's project in Google AI Studio, then retry.",
     helpUrl: "https://ai.studio/projects",

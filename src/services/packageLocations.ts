@@ -1,5 +1,7 @@
 import type { MapLocation, MapGroup } from "../types/geography";
 import type { Evidence, PackageLocation } from "../types/research";
+import { coordinatesSchema } from "./coordinates";
+import { locationOverride } from "./locationOverrides";
 
 // shortcut: saved demo area hints, replace with explicit location metadata from the backend.
 const demoLocations: Record<string, PackageLocation> = {
@@ -33,9 +35,12 @@ async function geocodeLocation(name: string, token: string, signal: AbortSignal,
 }
 export async function locatePackages(items: Evidence[], token: string, signal: AbortSignal): Promise<LocatedPackage[]> {
   const locations = await Promise.all(items.map(async (item): Promise<LocatedPackage | null> => {
+    const override = locationOverride(item.location?.name ?? "") ?? locationOverride(item.title);
+    if (override) return { itemId: item.id, name: override.name, precision: "place", coordinates: override.coordinates };
     const hint = packageLocationHint(item);
     if (!hint) return null;
-    const coordinates = hint.coordinates ?? await geocodeLocation(hint.name, token, signal, hint.precision === "region" ? "region" : "place,locality");
+    const coordinates = hint.coordinates !== undefined ? coordinatesSchema().parse(hint.coordinates)
+      : await geocodeLocation(hint.name, token, signal, hint.precision === "region" ? "region" : "place,locality");
     return coordinates ? { itemId: item.id, name: hint.name, precision: hint.precision, coordinates: [...coordinates] } : null;
   }));
   return locations.filter((location): location is LocatedPackage => location !== null);
@@ -51,8 +56,14 @@ export function groupLocations(locations: LocatedPackage[]): MapGroup[] {
   return [...groups.values()];
 }
 
-export async function findLocation(query: string, token: string, signal: AbortSignal): Promise<MapLocation> {
+export async function findLocation(query: string, token: string, signal: AbortSignal, point?: [number, number]): Promise<MapLocation> {
   const name = query.trim();
+  const override = locationOverride(name);
+  if (override) return override;
+  if (point !== undefined) {
+    const coordinates = coordinatesSchema().parse(point);
+    return { name: name || `${coordinates[1]}, ${coordinates[0]}`, coordinates, precision: "coordinates" };
+  }
   if (!name) throw new Error("Enter a place or latitude, longitude.");
   const pair = name.match(/^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/);
   if (pair) {

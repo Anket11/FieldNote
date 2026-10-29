@@ -1,5 +1,5 @@
 import { BuiltInAgent, CopilotRuntime, createCopilotRuntimeHandler, defineTool } from "@copilotkit/runtime/v2";
-import { agentInstructions, libraryQuerySchema, lookupLibrary, readSources, sourceQuerySchema } from "@/services/chatLibrary";
+import { agentInstructions, libraryQuerySchema, lookupLibrary, readSources, sourceQuerySchema, researchPlanSchema, evidenceAssessmentSchema, assessEvidence } from "@/services/chatLibrary";
 
 export const runtime = "nodejs";
 
@@ -9,8 +9,20 @@ const copilotRuntime = new CopilotRuntime({
       model: `google:${process.env.GEMINI_MODEL || "gemini-3.8-flash"}`,
       apiKey: process.env.GEMINI_API_KEY,
       prompt: agentInstructions,
-      maxSteps: 6,
+      maxSteps: 12,
       tools: [
+        defineTool({
+          name: "assessEvidence",
+          description: "Report evidence sufficiency and concrete gaps. When insufficient, provide a new focused query; the tool performs that library search. Read the returned sources before assessing again. This does not verify external facts.",
+          parameters: evidenceAssessmentSchema,
+          execute: async (input) => assessEvidence(input),
+        }),
+        defineTool({
+          name: "reportResearchPlan",
+          description: "Report or update a concise operational research plan. Task statuses must reflect actual work. Do not include private reasoning.",
+          parameters: researchPlanSchema,
+          execute: async (input) => researchPlanSchema.parse(input),
+        }),
         defineTool({
           name: "lookupLibrary",
           description: "Read relevant procurement records, known projects, source IDs and established award associations from the supplied library. This is not external research.",

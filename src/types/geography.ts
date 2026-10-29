@@ -1,6 +1,8 @@
-export interface MapLocation {
+export interface MapTarget {
   name: string;
   coordinates: [number, number];
+}
+export interface MapLocation extends MapTarget {
   precision: "approximate" | "coordinates";
 }
 export type MapView = "map" | "terrain" | "history";

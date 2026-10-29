@@ -1,3 +1,4 @@
+import { answerOutputs } from "../src/types/chat";
 // Live runtime smoke check. Requires the app's dev server and its server-side Gemini configuration.
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { answerSchema, validateAnswer } from "../src/services/chatLibrary";
@@ -41,8 +42,8 @@ async function check() {
         const call = calls.get(event.toolCallId);
         if (call?.name === "presentResearchAnswer") {
           const answer = validateAnswer(JSON.parse(call.args));
-          if (/similar procurements/i.test(question) && answer.output?.kind !== "collection") throw new Error("The request did not produce a procurement list.");
-          console.log(JSON.stringify({ passed: true, output: answer.output?.kind ?? "text", claims: answer.claims.length }));
+          if (/similar procurements/i.test(question) && !answerOutputs(answer).some((output) => output.kind === "collection")) throw new Error("The request did not produce a procurement list.");
+          console.log(JSON.stringify({ passed: true, outputs: answerOutputs(answer).map((output) => output.kind), claims: answer.claims.length }));
           await reader.cancel(); return;
         }
       }

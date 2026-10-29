@@ -20,13 +20,10 @@ interface MapboxMarker {
   setLngLat(coordinates: [number, number]): MapboxMarker;
   addTo(map: MapboxMap): MapboxMarker;
 }
-declare global {
-  interface Window {
-    mapboxgl?: {
-      supported(): boolean;
-      Map: new (options: { container: HTMLElement; accessToken: string; style: string; center: [number, number]; zoom: number }) => MapboxMap;
-      Marker: new (options: { element: HTMLElement }) => MapboxMarker;
-      NavigationControl: new () => object;
-    };
-  }
+export interface MapboxSDK {
+  supported(): boolean;
+  Map: new (options: { container: HTMLElement; accessToken: string; style: string; center: [number, number]; zoom: number }) => MapboxMap;
+  Marker: new (options: { element: HTMLElement; anchor?: "bottom" | "center"; pitchAlignment?: "viewport"; rotationAlignment?: "viewport"; occludedOpacity?: number }) => MapboxMarker;
+  NavigationControl: new () => object;
 }
+declare global { interface Window { mapboxgl?: MapboxSDK } }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ChecklistEdit, ResearchAnswer } from "../types/chat";
+import { answerOutputs, type ChecklistEdit, type ResearchAnswer } from "../types/chat";
 
 export const checklistChangeSchema = z.object({
   outputId: z.string().min(1).max(200), itemId: z.string().min(1).max(200),
@@ -15,8 +15,8 @@ export function validateChecklistChange(value: unknown, answers: Record<string, 
   const positive = completionCommands.some((command) => /\b(?:check off|tick off|done|complete|completed|checked)\b/i.test(command));
   if (change.done !== undefined && (change.done ? !positive || negative : !negative)) throw new Error("Explicit completion or uncompletion instructions are required.");
   if (change.notes !== undefined && !commands.some((command) => /^(?:add|write|update|set|change)\b.*\bnotes?\b/i.test(command))) throw new Error("Explicit note instructions are required.");
-  const output = Object.hasOwn(answers, change.outputId) ? answers[change.outputId].output : undefined;
-  if (output?.kind !== "checklist" || !output.items.some((item) => item.id === change.itemId)) throw new Error("Unknown checklist item in this chat.");
+  const outputs = Object.hasOwn(answers, change.outputId) ? answerOutputs(answers[change.outputId]) : [];
+  if (!outputs.some((output) => output.kind === "checklist" && output.items.some((item) => item.id === change.itemId))) throw new Error("Unknown checklist item in this chat.");
   const changes: Partial<ChecklistEdit> = {};
   if (change.done !== undefined) changes.done = change.done;
   if (change.notes !== undefined) changes.notes = change.notes;

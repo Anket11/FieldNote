@@ -1,4 +1,4 @@
-import type { ResearchAnswer } from "../types/chat";
+import { answerOutputs, type ResearchAnswer } from "../types/chat";
 import type { Citation, ResearchResult } from "../types/research";
 import { combinePackages } from "./packageComparison";
 
@@ -10,22 +10,26 @@ export function answerSources(answer: ResearchAnswer, result: ResearchResult): C
     const record = claim.recordId ? byId.get(claim.recordId) : undefined;
     for (const id of claim.citationIds) if (record?.citationIds.includes(id)) ids.add(id);
   }
-  const output = answer.output;
-  const recordIds = output?.kind === "collection" ? output.recordIds : output?.kind === "checklist" ? output.items.flatMap((item) => item.recordId ?? []) : [];
-  for (const recordId of recordIds) for (const id of byId.get(recordId)?.citationIds ?? []) ids.add(id);
-  if (output?.kind === "collection") {
-    const awards = result.sections.find((section) => section.id === "historical_awards")?.items ?? [];
-    const split = (output.layout ?? (recordIds.every((id) => byId.get(id)?.kind === "package" || awards.some((item) => item.id === id)) ? "split" : "list")) === "split";
-    if (split && (!output.detailFields || output.detailFields.some((field) => ["supplier", "awardValue", "duration"].includes(field)))) {
-      for (const entry of combinePackages(records.filter((item) => item.kind === "package"), awards, result.citationsById)) {
-        if (recordIds.includes(entry.item.id)) for (const id of entry.award?.citationIds ?? []) ids.add(id);
+  for (const output of answerOutputs(answer)) {
+    const recordIds = output?.kind === "collection" ? output.recordIds : output?.kind === "checklist" ? output.items.flatMap((item) => item.recordId ?? []) : [];
+    for (const recordId of recordIds) for (const id of byId.get(recordId)?.citationIds ?? []) ids.add(id);
+    if (output?.kind === "collection") {
+      const awards = result.sections.find((section) => section.id === "historical_awards")?.items ?? [];
+      const split = (output.layout ?? (recordIds.every((id) => byId.get(id)?.kind === "package" || awards.some((item) => item.id === id)) ? "split" : "list")) === "split";
+      if (split && (!output.detailFields || output.detailFields.some((field) => ["supplier", "awardValue", "duration"].includes(field)))) {
+        for (const entry of combinePackages(records.filter((item) => item.kind === "package"), awards, result.citationsById)) {
+          if (recordIds.includes(entry.item.id)) for (const id of entry.award?.citationIds ?? []) ids.add(id);
+        }
       }
     }
   }
+  return groupSources([...ids].flatMap((id) => Object.hasOwn(result.citationsById, id) ? [result.citationsById[id]] : []));
+}
+
+export function groupSources(sources: Citation[]): Citation[][] {
   const groups: Citation[][] = [];
-  for (const id of ids) {
-    if (!Object.hasOwn(result.citationsById, id)) continue;
-    const source = result.citationsById[id];
+  for (const source of sources) {
+    if (groups.some((group) => group.some((other) => other.id === source.id))) continue;
     // Cached JSON pages can contain many distinct notices; they are not source documents.
     const matches = groups.filter((group) => group.some((other) =>
       (source.sourceUrl && other.sourceUrl && !/\.jsonl?(?:[?#]|$)/i.test(source.sourceUrl) && source.sourceUrl.split("#")[0] === other.sourceUrl.split("#")[0]) ||
