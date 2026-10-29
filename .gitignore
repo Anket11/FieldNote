@@ -11,3 +11,5 @@ __pycache__/
 test-results/
 playwright-report/
 coverage/
+
+/demo-data/
