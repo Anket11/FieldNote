@@ -1,4 +1,4 @@
-# Procurement GPT: conversation-driven research workspace
+# Research Workspace: conversation-driven research workspace
 
 Status: Implemented in the shared workspace on 2026-10-28. Workspace-level testing boundary approved. Scripted transport and browser flows verified; live Gemini output verification is left to the user. Issue-tracker setup remains unavailable.
 
